@@ -1,0 +1,73 @@
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Bangumi Report for {{ user_id }}</title>
+<style>
+  body {font-family: sans-serif;}
+  .main {width: 1024px; margin: auto; padding: 0}
+  .main h2 {width: 100%; float: left}
+  body ul {list-style-type: none; padding: 0}
+  body ul li {float: left;}
+  body ul li img {width: 128px; height: 180px}
+  body h1 {text-align: center}
+  .item-title {
+    display: none;
+    position: absolute;
+    width: 128px;
+    z-index: 1;
+    bottom: 0;
+    font-size: 1rem;
+    background: linear-gradient(to top, #000000b8, #0101016e 75%, #ffffff00);
+    color: white;
+    padding-top: 5px;
+  }
+  .item-box {position: relative;}
+  .item-box:hover > .item-title {display: block;}
+  .item-image {position: relative;}
+  .item-month-label {
+    position: absolute;
+    width: 128px;
+    z-index: 1;
+    top: 0;
+    font-size: 1.5rem;
+    background: linear-gradient(to bottom, #000000b8, #0101016e 75%, #ffffff00);
+    color: white;
+  }
+  .item-month-label span {font-size: 3rem;}
+</style>
+<body>
+
+<h1>Bangumi Report for {{ user_id }} </h1>
+{% for year_list in image_list %}
+<div class="main">
+  {% if year_list %}
+  <h2>{{year_list[0]['marked_date'][0:4]}}</h2>
+  {% endif %}
+  <ul>
+  {% for image in year_list %}
+    <li>
+      <div class="item-box">
+        {% if image['label'] != 0 %}
+        <div class="item-month-label">
+          <span>{{image['label']}}</span>月
+        </div>
+        {% endif %}
+        
+        <div class="item-image">
+            <a href="{{ image['link'] }}" target="_blank">
+                <img src="{{ image['image_url'] }}">
+            </a>
+        </div>
+        
+        <div class="item-title">
+          {{image['title']}} <br>
+          <small>{{image['marked_date']}}</small>
+        </div>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endfor %}
+
+</body>
+</html>
