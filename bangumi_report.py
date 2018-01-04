@@ -119,7 +119,7 @@ class ReportGenerator:
         logging.info('Output file: %s', file_name)
         logging.debug('Template file: %s', 'template.html')
         template = self.env.get_template('template.html')
-        with open(file_name, 'w') as f:
+        with open(file_name, 'w', encoding='utf-8') as f:
             f.write(template.render(user_id=self.user_id, image_list=self.image_url_list, year=self.year))
 
 
