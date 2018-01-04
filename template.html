@@ -8,12 +8,12 @@
   .main h2 {width: 100%; float: left}
   body ul {list-style-type: none; padding: 0}
   body ul li {float: left;}
-  body ul li img {width: 128px; height: 180px}
+  div.image-wrapper img {width: 128px; height: 180px}
   body h1 {text-align: center}
   .item-title {
     display: none;
     position: absolute;
-    width: 128px;
+    width: 100%;
     z-index: 1;
     bottom: 0;
     font-size: 1rem;
@@ -26,7 +26,7 @@
   .item-image {position: relative;}
   .item-month-label {
     position: absolute;
-    width: 128px;
+    width: 100%;
     z-index: 1;
     top: 0;
     font-size: 1.5rem;
@@ -36,6 +36,9 @@
   .item-month-label span {font-size: 3rem;}
   @media (max-width: 800px) {
     .main {width: 100%;}
+    body ul li {width: 33.333333%;}
+    div.image-wrapper {height: 0; width: 100%; padding-top: 140%;}
+    div.image-wrapper img {width: 100%; height: auto; position: absolute; top: 0;}
   }
 </style>
 <body>
@@ -58,7 +61,10 @@
         
         <div class="item-image">
             <a href="{{ image['link'] }}" target="_blank">
+              <div class="image-wrapper">
                 <img src="{{ image['image_url'] }}">
+              </div>
+              
             </a>
         </div>
         
