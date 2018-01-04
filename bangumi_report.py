@@ -37,7 +37,7 @@ class ImageURLList:
                 large_image_url = item[0].replace('/s/', '/l/')
                 marked_time = datetime.datetime.strptime(item[3], '%Y-%m-%d')
                 self.item_url_list.append({
-                    'image_url': 'http:' + large_image_url, 
+                    'image_url': 'https:' + large_image_url, 
                     'marked_date': marked_time.strftime('%Y-%m-%d'),
                     'title': item[2],
                     'link': 'http://bgm.tv' + item[1]
