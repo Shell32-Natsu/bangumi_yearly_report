@@ -72,13 +72,15 @@
         <div class="item-title">
           {{image['title']}} <br>
           <small>
-            {{image['marked_date']}}
-            {% if 'star' in image %}
-            <span class="star">
+            {{image['marked_date']}}&nbsp;
+
+            {% if image['star'] >= 0 %}
+            {{image['star']}}&#x2605;
+            {#<span class="star">
               {%- for i in range(0, image['star'], 2) %}
                 {%- if image['star'] - i < 2 %}&#x2606;{%- else %}&#x2605;{%- endif %}
               {%- endfor %}
-            </span>
+            </span>#}
             {% endif %}
           </small>
         </div>

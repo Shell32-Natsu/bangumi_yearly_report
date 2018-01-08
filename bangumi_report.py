@@ -38,7 +38,7 @@ class ImageURLList:
                     continue
                 large_image_url = item[0].replace('/s/', '/l/')
                 marked_time = datetime.datetime.strptime(item[5], '%Y-%m-%d')
-                star_num = 0
+                star_num = -1
                 if item[4] != '':
                     star_num = int(item[4])
                 self.item_url_list.append({
