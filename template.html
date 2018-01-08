@@ -34,6 +34,7 @@
     color: white;
   }
   .item-month-label span {font-size: 3rem;}
+  .star {font-size: 0.7rem;}
   @media (max-width: 800px) {
     .main {width: 100%;}
     body ul li {width: 33.333333%;}
@@ -70,7 +71,16 @@
         
         <div class="item-title">
           {{image['title']}} <br>
-          <small>{{image['marked_date']}}</small>
+          <small>
+            {{image['marked_date']}}
+            {% if 'star' in image %}
+            <span class="star">
+              {%- for i in range(0, image['star'], 2) %}
+                {%- if image['star'] - i < 2 %}&#x2606;{%- else %}&#x2605;{%- endif %}
+              {%- endfor %}
+            </span>
+            {% endif %}
+          </small>
         </div>
       </div>
     </li>
