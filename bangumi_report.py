@@ -45,12 +45,14 @@ class ImageURLList:
                     'image_url': 'https:' + large_image_url, 
                     'marked_date': marked_time.strftime('%Y-%m-%d'),
                     'title': item[2],
-                    'link': 'http://bgm.tv' + item[1],
+                    # 'link': 'http://bgm.tv' + item[1],
+                    'link': 'http://mirror.bgm.rin.cat' + item[1],
                     'star': star_num
                 })
 
     def get_list(self):
-        list_url = "http://bgm.tv/%s/list/%s" % (self.type,self.user_id)
+        # list_url = "http://bgm.tv/%s/list/%s" % (self.type,self.user_id)
+        list_url = "http://mirror.bgm.rin.cat/%s/list/%s" % (self.type,self.user_id)
         collect_url = list_url + '/collect'
         logging.debug('collect_url=%s', collect_url)
 
