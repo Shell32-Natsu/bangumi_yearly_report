@@ -62,7 +62,7 @@ class ImageURLList:
                 if item[4] != '':
                     star_num = int(item[4])
                 self.item_url_list.append({
-                    'image_url': img_url, 
+                    'image_url': img_url,
                     'marked_date': marked_time.strftime('%Y-%m-%d'),
                     'title': item[2],
                     'link': 'http://bgm.tv' + item[1],
@@ -70,8 +70,7 @@ class ImageURLList:
                 })
 
     def get_list(self):
-        # list_url = "http://bgm.tv/%s/list/%s" % (self.type,self.user_id)
-        list_url = "http://mirror.bgm.rin.cat/%s/list/%s" % (self.type,self.user_id)
+        list_url = "http://bgm.tv/%s/list/%s" % (self.type,self.user_id)
         collect_url = list_url + '/collect'
         logging.debug('collect_url=%s', collect_url)
 
@@ -96,13 +95,13 @@ class ImageURLList:
 
         url_prefix = collect_url + '?page='
         page_list = [url_prefix + str(x) for x in range(1, page_num + 1)]
-        
+
         thread_list = []
         for page_url in page_list:
             thread = Thread(target=self.get_item_url, kwargs={'page_url': page_url})
             thread_list.append(thread)
             thread.start()
-        
+
         thread_num = len(thread_list)
         for thread in thread_list:
             thread.join()
@@ -111,7 +110,7 @@ class ImageURLList:
         # print(self.item_url_list)
         logging.info('Finished getting item URLs. Got %s items', len(self.item_url_list))
         return self.item_url_list
- 
+
 
 class ReportGenerator:
     def __init__(self, image_url_list, user_id, year, type):
