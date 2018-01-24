@@ -11,13 +11,29 @@ import requests
 from jinja2 import Environment, FileSystemLoader
 
 class ImageURLList:
-    def __init__(self, user_id, max_connection, year, type):
+    def __init__(self, user_id, max_connection, year, type, saveimg):
         self.user_id = user_id
         self.item_url_list = []
         self.pool_sema = BoundedSemaphore(value=max_connection)
         self.year = year
         self.type = type
+        self.saveimg = saveimg
 
+    def save_img(self, img_url, file_path='img'):
+        try:
+            if not os.path.exists(file_path):
+                logging.info('Folder "%s" unexisted, recreated',file_path)
+                os.makedirs(file_path)
+            file_suffix = os.path.splitext(img_url)[1]
+            file_name = img_url.split("/")[-1]
+            filename = '{}{}{}{}'.format(file_path,os.sep,file_name,file_suffix)
+            logging.debug('image saved: %s',filename)
+            im = requests.get(img_url)
+            if im.status_code == 200:
+                open(filename,'wb').write(im.content)
+            return filename
+        except IOError as e: logging.error('IOError : %s',e)
+        except Exception as e: logging.error('Error : %s',e)
     def get_item_url(self, page_url):
         with self.pool_sema:
             logging.debug('Parsing %s', page_url)
@@ -33,16 +49,20 @@ class ImageURLList:
             items = pattern.findall(response.text)
             logging.debug('%s items in %s', len(items), page_url)
 
+            folder_path = '%s-%s-%s-report' % (self.user_id, self.year, self.type)
             for item in items:
                 if self.year != 'all' and item[5][0:4] != self.year:
                     continue
                 large_image_url = item[0].replace('/s/', '/l/')
+                img_url ='https:' + large_image_url
+                if self.saveimg:
+                    img_url = self.save_img(img_url, folder_path)
                 marked_time = datetime.datetime.strptime(item[5], '%Y-%m-%d')
                 star_num = -1
                 if item[4] != '':
                     star_num = int(item[4])
                 self.item_url_list.append({
-                    'image_url': 'https:' + large_image_url, 
+                    'image_url': img_url, 
                     'marked_date': marked_time.strftime('%Y-%m-%d'),
                     'title': item[2],
                     # 'link': 'http://bgm.tv' + item[1],
@@ -141,6 +161,7 @@ def main():
     parser.add_argument('-t', '--type', type=str, default='anime')
     parser.add_argument('-d', '--debug', action='store_true', default=False)
     parser.add_argument('--version', action='version', version='%(prog)s 0.1')
+    parser.add_argument('-s', '--saveimg', action='store_true', default=False)
 
     args = parser.parse_args()
     if args.debug:
@@ -152,7 +173,7 @@ def main():
 
     logging.info('user_id=\'%s\', max_conn=%s, year=%s, type=%s', args.user_id, args.max_conn, args.year, args.type)
 
-    image_url_list = ImageURLList(args.user_id, args.max_conn, args.year, args.type).get_list()
+    image_url_list = ImageURLList(args.user_id, args.max_conn, args.year, args.type, args.saveimg).get_list()
     report_generator = ReportGenerator(image_url_list, args.user_id, args.year, args.type)
     report_generator.generate_report()
 
