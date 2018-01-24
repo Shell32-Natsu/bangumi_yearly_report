@@ -65,8 +65,7 @@ class ImageURLList:
                     'image_url': img_url, 
                     'marked_date': marked_time.strftime('%Y-%m-%d'),
                     'title': item[2],
-                    # 'link': 'http://bgm.tv' + item[1],
-                    'link': 'http://mirror.bgm.rin.cat' + item[1],
+                    'link': 'http://bgm.tv' + item[1],
                     'star': star_num
                 })
 
