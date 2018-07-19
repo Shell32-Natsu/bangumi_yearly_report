@@ -6,6 +6,7 @@ import logging
 import re
 from threading import BoundedSemaphore, Thread, active_count
 import datetime
+import json
 
 import requests
 from jinja2 import Environment, FileSystemLoader
@@ -34,6 +35,22 @@ class ImageURLList:
             return filename
         except IOError as e: logging.error('IOError : %s',e)
         except Exception as e: logging.error('Error : %s',e)
+
+    def get_missed_image (self, item_id):
+        bgm_api_prefix = 'http://api.bgm.tv'
+        item_url = bgm_api_prefix + '/subject/' + item_id
+        default_ret = '//bgm.tv/img/no_icon_subject.png'
+
+        response = requests.get(item_url)
+        if response.status_code != 200:
+            logging.error('\nURL: %s\nStatus code: %s\nContent: %s\n', \
+                item_url, response.status_code, response.text)
+            return default_ret
+        res_json = json.loads(response.text)
+        if 'images' not in res_json or 'large' not in res_json['images']:
+            return default_ret
+        return res_json['images']['large'][5:]
+
     def get_item_url(self, page_url):
         with self.pool_sema:
             logging.debug('Parsing %s', page_url)
@@ -54,6 +71,10 @@ class ImageURLList:
                 if self.year != 'all' and item[5][0:4] != self.year:
                     continue
                 large_image_url = item[0].replace('/s/', '/l/')
+                # The image is not shown to guest. Use API to get it
+                if large_image_url.startswith('/img/'):
+                    item_id = item[1].split('/')[-1]
+                    large_image_url = self.get_missed_image(item_id)
                 img_url ='https:' + large_image_url
                 if self.saveimg:
                     img_url = self.save_img(img_url, folder_path)
