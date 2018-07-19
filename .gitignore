@@ -1,2 +1,4 @@
 .vscode
 *report.html
+go-server/config.txt
+go-server/my.db

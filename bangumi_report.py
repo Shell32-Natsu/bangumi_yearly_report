@@ -142,13 +142,17 @@ class ReportGenerator:
         self.year = year
         self.type = type
 
-    def generate_report(self):
+    def generate_report(self, to_stdout):
         file_name = '%s-%s-%s-report.html' % (self.user_id, self.year, self.type)
         logging.info('Output file: %s', file_name)
         logging.debug('Template file: %s', 'template.html')
         template = self.env.get_template('template.html')
-        with open(file_name, 'w', encoding='utf-8') as f:
-            f.write(template.render(user_id=self.user_id, image_list=self.image_url_list, year=self.year))
+        html = template.render(user_id=self.user_id, image_list=self.image_url_list, year=self.year)
+        if not to_stdout:
+            with open(file_name, 'w', encoding='utf-8') as f:
+                f.write(html)
+        else:
+            print(html)
 
 
 def main():
@@ -160,9 +164,13 @@ def main():
     parser.add_argument('-d', '--debug', action='store_true', default=False)
     parser.add_argument('--version', action='version', version='%(prog)s 0.1')
     parser.add_argument('-s', '--saveimg', action='store_true', default=False)
+    parser.add_argument('-o', '--stdout', action='store_true', default=False)
+    parser.add_argument('-q', '--quiet', action='store_true', default=False)
 
     args = parser.parse_args()
-    if args.debug:
+    if args.quiet:
+        logging.basicConfig(level=logging.CRITICAL)
+    elif args.debug:
         logging.basicConfig(level=logging.DEBUG, \
                     format='[%(asctime)s][%(filename)s][%(lineno)s][%(levelname)s][%(process)d][%(message)s]')
     else:
@@ -173,7 +181,7 @@ def main():
 
     image_url_list = ImageURLList(args.user_id, args.max_conn, args.year, args.type, args.saveimg).get_list()
     report_generator = ReportGenerator(image_url_list, args.user_id, args.year, args.type)
-    report_generator.generate_report()
+    report_generator.generate_report(args.stdout)
 
 if __name__ == '__main__':
     main()
