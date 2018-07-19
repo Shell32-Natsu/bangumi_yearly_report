@@ -30,3 +30,5 @@ usage: bangumi_report.py [-h] -u USER_ID [-m MAX_CONN] [-y YEAR] [-t TYPE] [-d] 
  用刚学了两天的Go写了一个简单的HTTP server，这个脚本终于有在线版本了。但是实际上还是运行了Python脚本来生成的。
 
  本来是想用BGM新增加的官方API来用Go把这个脚本重写一遍，结果发现官方API没有获取全部列表的功能，只能继续用原来的脚本了。我在Go server里面都实现好了OAuth Callback和简单的数据库了发现没有卵用，以备后用还是留着吧😂。
+
+ 地址：http://bmg.xiadong.info/report/[username]
