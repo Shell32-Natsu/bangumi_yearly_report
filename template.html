@@ -13,11 +13,12 @@
 </script>
 <style>
   body {font-family: sans-serif; background: #1c1c1c; color: white;}
-  .main {width: 1024px; margin: auto; padding: 0}
+  .main {width: 80%; margin: auto; padding: 0}
   .main h2 {width: 100%; float: left}
   body ul {list-style-type: none; padding: 0}
-  body ul li {float: left;}
-  div.image-wrapper img {width: 128px; height: 180px}
+  body ul li {float: left; width: 12.5%;}
+  div.image-wrapper {padding-top: 140%;}
+  div.image-wrapper img {width: 100%; top: 0; height: 100%; position: absolute;}
   body h1 {text-align: center}
   .item-title {
     display: none;
@@ -45,15 +46,15 @@
   }
   .item-month-label span {font-size: 3rem;}
   .star {font-size: 0.7rem;}
-  @media (max-width: 800px) {
+  #github-link {bottom: 0; padding: 0.5rem; clear: both; text-align: center;}
+  #github-link img {margin: auto; height: 2rem; display: block;}
+  @media (max-width: 1300px) {
     .main {width: 100%;}
+  }
+  @media (max-width: 800px) {
     body ul li {width: 33.333333%;}
     div.image-wrapper {height: 0; width: 100%; padding-top: 140%;}
-    div.image-wrapper img {width: 100%; height: 100%; position: absolute; top: 0;}
   }
-  #github-link {position: fixed; bottom: 0; padding: 0.5rem;}
-  #github-link img {margin: auto; height: 2rem; display: block;}
-  
 </style>
 <body>
 
