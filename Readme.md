@@ -18,9 +18,9 @@ usage: bangumi_report.py [-h] -u USER_ID [-m MAX_CONN] [-y YEAR] [-t TYPE] [-d] 
 
 # Demo
 
-[2017年](https://www.xiadong.info/html/bangumi-2017-report.html)
+[2017年](http://bgm.xiadong.info/report/xiadong1994?year=2017)
 
-[All](https://www.xiadong.info/html/bangumi-all-report.html)
+[All](http://bgm.xiadong.info/report/xiadong1994?year=all)
 
 # 依赖
  - Requests
