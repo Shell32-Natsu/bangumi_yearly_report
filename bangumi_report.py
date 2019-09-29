@@ -60,7 +60,7 @@ class ImageURLList:
                     page_url, response.status_code, response.text)
                 return
 
-            pattern = re.compile(r'<img src="(.*?)" class="cover" />.*?<a href="(/subject/\d+?)" class="l">(.*?)</a>.*?(<span class="sstars(.*?) starsinfo"></span> )?<span class="tip_j">(\d{4}-\d{1,2}-\d{1,2})</span>', re.S)
+            pattern = re.compile(r'<img src="(.*?)" class="cover" />.*?<a href="(/subject/\d+?)" class="l">(.*?)</a>.*?(<span class="starstop-s"><span class="starlight stars(\d+?)"></span></span>)?<span class="tip_j">(\d{4}-\d{1,2}-\d{1,2})</span>', re.S)
             # item image_url, link, title, [wtf], starinfo, marked_time
             response.encoding = 'utf-8'
             items = pattern.findall(response.text)
