@@ -19,6 +19,8 @@ class ImageURLList:
         self.year = year
         self.type = type
         self.saveimg = saveimg
+        self.session = requests.Session()
+        self.session.headers = {'User-Agent': 'Mozilla/5.0 Chrome/77.0.3865.120'}
 
     def save_img(self, img_url, file_path='img'):
         try:
@@ -29,7 +31,7 @@ class ImageURLList:
             file_name = img_url.split("/")[-1]
             filename = '{}{}{}{}'.format(file_path,os.sep,file_name,file_suffix)
             logging.debug('image saved: %s',filename)
-            im = requests.get(img_url)
+            im = self.session.get(img_url)
             if im.status_code == 200:
                 open(filename,'wb').write(im.content)
             return filename
@@ -41,7 +43,7 @@ class ImageURLList:
         item_url = bgm_api_prefix + '/subject/' + item_id
         default_ret = '//bgm.tv/img/no_icon_subject.png'
 
-        response = requests.get(item_url)
+        response = self.session.get(item_url)
         if response.status_code != 200:
             logging.error('\nURL: %s\nStatus code: %s\nContent: %s\n', \
                 item_url, response.status_code, response.text)
@@ -54,7 +56,7 @@ class ImageURLList:
     def get_item_url(self, page_url):
         with self.pool_sema:
             logging.debug('Parsing %s', page_url)
-            response = requests.get(page_url)
+            response = self.session.get(page_url)
             if response.status_code != 200:
                 logging.error('\nURL: %s\nStatus code: %s\nContent: %s\n', \
                     page_url, response.status_code, response.text)
@@ -96,7 +98,7 @@ class ImageURLList:
         logging.debug('collect_url=%s', collect_url)
 
         page_num = 0
-        response = requests.get(collect_url)
+        response = self.session.get(collect_url)
         if response.status_code != 200:
             logging.error('\nStatus code: %s\nContent: %s\n', response.status_code, response.text)
             return self.image_url_list
