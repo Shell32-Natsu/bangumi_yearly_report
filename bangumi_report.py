@@ -11,6 +11,25 @@ import json
 import requests
 from jinja2 import Environment, FileSystemLoader
 
+headers = {
+    "Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+    "Cache-Control": "max-age=0",
+    "Connection": "keep-alive",
+    "DNT": "1",
+    "Host": "bangumi.tv",
+    "sec-ch-ua": "Google Chrome 77",
+    "Sec-Fetch-Dest": "document",
+    "Sec-Fetch-Mode": "navigate",
+    "Sec-Fetch-Site": "none",
+    "Sec-Fetch-User": "?1",
+    "Sec-Origin-Policy": "0",
+    "Upgrade-Insecure-Requests": "1",
+    "User-Agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Mobile Safari/537.36"
+
+}
+
 class ImageURLList:
     def __init__(self, user_id, max_connection, year, type, saveimg):
         self.user_id = user_id
@@ -29,7 +48,7 @@ class ImageURLList:
             file_name = img_url.split("/")[-1]
             filename = '{}{}{}{}'.format(file_path,os.sep,file_name,file_suffix)
             logging.debug('image saved: %s',filename)
-            im = requests.get(img_url)
+            im = requests.get(img_url, headers=headers)
             if im.status_code == 200:
                 open(filename,'wb').write(im.content)
             return filename
@@ -41,7 +60,7 @@ class ImageURLList:
         item_url = bgm_api_prefix + '/subject/' + item_id
         default_ret = '//bgm.tv/img/no_icon_subject.png'
 
-        response = requests.get(item_url)
+        response = requests.get(item_url, headers=headers)
         if response.status_code != 200:
             logging.error('\nURL: %s\nStatus code: %s\nContent: %s\n', \
                 item_url, response.status_code, response.text)
@@ -54,7 +73,7 @@ class ImageURLList:
     def get_item_url(self, page_url):
         with self.pool_sema:
             logging.debug('Parsing %s', page_url)
-            response = requests.get(page_url)
+            response = requests.get(page_url, headers=headers)
             if response.status_code != 200:
                 logging.error('\nURL: %s\nStatus code: %s\nContent: %s\n', \
                     page_url, response.status_code, response.text)
@@ -91,12 +110,12 @@ class ImageURLList:
                 })
 
     def get_list(self):
-        list_url = "http://bgm.tv/%s/list/%s" % (self.type,self.user_id)
+        list_url = "https://bangumi.tv/%s/list/%s" % (self.type,self.user_id)
         collect_url = list_url + '/collect'
         logging.debug('collect_url=%s', collect_url)
 
         page_num = 0
-        response = requests.get(collect_url)
+        response = requests.get(collect_url, headers=headers)
         if response.status_code != 200:
             logging.error('\nStatus code: %s\nContent: %s\n', response.status_code, response.text)
             return self.image_url_list
