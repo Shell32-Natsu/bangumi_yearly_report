@@ -11,6 +11,23 @@
   div.image-wrapper {padding-top: 140%;}
   div.image-wrapper img {width: 100%; top: 0; height: 100%; position: absolute;}
   body h1 {text-align: center}
+  .type-tag {
+    display: inline-block;
+    margin: 0 2px;
+    padding: 0 0.2rem;
+    font-size: 0.7rem;
+    color: white;
+    background-color: #ff5500;
+    border: 1px solid transparent;
+    border-radius: 0.2rem;
+    opacity: 0.8;
+    vertical-align: top;
+  }
+  .type-anime {background-color: #f5222d;}
+  .type-book {background-color: #fa8c16;}
+  .type-music {background-color: #52c41a;}
+  .type-game {background-color: #1890ff;}
+  .type-real {background-color: #722ed1;}
   .item-title {
     display: none;
     position: absolute;
@@ -49,7 +66,14 @@
 </style>
 <body>
 
-<h1>Bangumi Report for {{ user_id }} </h1>
+<h1>
+  Bangumi Report for {{ user_id }}
+  {% if type != 'all' %}
+  <span class="type-tag type-{{type}}">
+    {{type}}
+  </span>
+  {% endif %}
+</h1>
 {% for year_list in image_list %}
 <div class="main">
   {% if year_list %}
@@ -75,6 +99,11 @@
         </div>
         
         <div class="item-title">
+          {% if type == 'all' %}
+          <span class="type-tag type-{{image['type']}}">
+            {{image['type']}}
+          </span><br>
+          {% endif %}
           {{image['title']}} <br>
           <small>
             {{image['marked_date']}}&nbsp;

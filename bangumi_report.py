@@ -53,7 +53,7 @@ class ImageURLList:
             return default_ret
         return res_json['images']['large'][5:]
 
-    def get_item_url(self, page_url):
+    def get_item_url(self, page_url, type):
         with self.pool_sema:
             logging.debug('Parsing %s', page_url)
             response = self.session.get(page_url)
@@ -89,19 +89,21 @@ class ImageURLList:
                     'marked_date': marked_time.strftime('%Y-%m-%d'),
                     'title': item[2],
                     'link': 'http://bgm.tv' + item[1],
-                    'star': star_num
+                    'star': star_num,
+                    'type': type
                 })
 
-    def get_list(self):
-        list_url = "http://bgm.tv/%s/list/%s" % (self.type,self.user_id)
+    def get_list_type(self, type):
+        list_url = "http://bgm.tv/%s/list/%s" % (type, self.user_id)
         collect_url = list_url + '/collect'
+        logging.info('Starting collect type of %s', type)
         logging.debug('collect_url=%s', collect_url)
 
         page_num = 0
         response = self.session.get(collect_url)
         if response.status_code != 200:
             logging.error('\nStatus code: %s\nContent: %s\n', response.status_code, response.text)
-            return self.image_url_list
+            return
 
         pattern = re.compile(r'.*&nbsp;(\d+)&nbsp;/&nbsp;(\d+)&nbsp;.*')
         matches = pattern.findall(response.text)
@@ -121,7 +123,7 @@ class ImageURLList:
 
         thread_list = []
         for page_url in page_list:
-            thread = Thread(target=self.get_item_url, kwargs={'page_url': page_url})
+            thread = Thread(target=self.get_item_url, kwargs={'page_url': page_url, 'type': type})
             thread_list.append(thread)
             thread.start()
 
@@ -129,6 +131,13 @@ class ImageURLList:
         for thread in thread_list:
             thread.join()
             logging.info('Finished: %s/%s', thread_num - active_count(), thread_num)
+
+    def get_list(self):
+        if self.type == 'all':
+            for type in ['anime', 'book', 'music', 'game', 'real']:
+                self.get_list_type(type)
+        else:
+            self.get_list_type(self.type)
 
         # print(self.item_url_list)
         logging.info('Finished getting item URLs. Got %s items', len(self.item_url_list))
@@ -170,7 +179,7 @@ class ReportGenerator:
         logging.info('Output file: %s', file_name)
         logging.debug('Template file: %s', 'template.html')
         template = self.env.get_template('template.html')
-        html = template.render(user_id=self.user_id, image_list=self.image_url_list, year=self.year)
+        html = template.render(user_id=self.user_id, image_list=self.image_url_list, year=self.year, type=self.type)
         if not to_stdout:
             with open(file_name, 'w', encoding='utf-8') as f:
                 f.write(html)
@@ -182,8 +191,9 @@ def main():
     parser = argparse.ArgumentParser(description='Generate Bangumi user report.')
     parser.add_argument('-u', '--user_id', type=str, required=True)
     parser.add_argument('-m', '--max_conn', type=int, default=5)
-    parser.add_argument('-y', '--year', type=str, default='2017')
-    parser.add_argument('-t', '--type', type=str, default='anime')
+    parser.add_argument('-y', '--year', type=str, default=str(datetime.datetime.now().year))
+    parser.add_argument('-t', '--type', type=str, default='all',
+                        help='report type from: all, anime, book, music, game, real')
     parser.add_argument('-d', '--debug', action='store_true', default=False)
     parser.add_argument('--version', action='version', version='%(prog)s 0.1')
     parser.add_argument('-s', '--saveimg', action='store_true', default=False)
