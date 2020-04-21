@@ -8,6 +8,7 @@
   .main h2 {width: 100%; float: left}
   body ul {list-style-type: none; padding: 0}
   body ul li {float: left; width: 12.5%;}
+  body.overview ul li {width: 7%;}
   div.image-wrapper {padding-top: 140%;}
   div.image-wrapper img {width: 100%; top: 0; height: 100%; position: absolute;}
   body h1 {text-align: center}
@@ -32,12 +33,17 @@
     display: none;
     position: absolute;
     width: 100%;
+    min-width: 72px;
     z-index: 1;
     bottom: 0;
     font-size: 1rem;
     background: linear-gradient(to top, #000000b8, #0101016e 75%, #ffffff00);
     color: white;
     padding-top: 1rem;
+  }
+  .item-title a {
+    color: white;
+    text-decoration: none;
   }
   .item-box {position: relative;}
   .item-box:hover {box-shadow: 0 0 10px 5px #4c4c4c; z-index: 1;}
@@ -54,6 +60,43 @@
   }
   .item-month-label span {font-size: 3rem;}
   .star {font-size: 0.7rem;}
+  .config {
+    display: block;
+    position: absolute;
+    right: 0;
+    top: 0;
+    margin: 5px;
+    color: darkgray;
+    font-size: 0.7rem;
+    text-align: right;
+  }
+  .config-menu {display: block; opacity: 0.7;}
+  .config:hover .config-menu {display: none;}
+  .config-content {display: none;}
+  .config:hover .config-content {display: block;}
+  .config-btn {
+    color: #d8d8d8;
+    border: 1px solid #6e6e6e;
+    text-shadow: 0px 1px 2px #444;
+    background-image: linear-gradient(to bottom, #767677 0%, #747474 100%);
+    background-repeat: repeat-x;
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff767677', endColorstr='#ff747474', GradientType=0);
+    -webkit-box-shadow: 0 1px 2px #393939, inset 0 1px 1px #7c7c7c;
+    -moz-box-shadow: 0 1px 2px #393939, inset 0 1px 1px #7c7c7c;
+    box-shadow: 0 1px 2px #393939, inset 0 1px 1px #7c7c7c;
+    display: inline-block;
+    text-decoration: none;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 1px 3px;
+  }
+  .config-btn.enabled {
+    color: #FFF;
+    background-image: linear-gradient(to bottom, #397de8 0%, #3072dc 100%);
+    background-repeat: repeat-x;
+  }
   #github-link {bottom: 0; padding: 0.5rem; clear: both; text-align: center;}
   #github-link img {margin: auto; height: 2rem;}
   @media (max-width: 1300px) {
@@ -61,9 +104,25 @@
   }
   @media (max-width: 800px) {
     body ul li {width: 33.333333%;}
+    body.overview ul li {width: 10%; min-width: 55px;}
     div.image-wrapper {height: 0; width: 100%; padding-top: 140%;}
   }
 </style>
+<script type="text/javascript">
+  function toggle() {
+    var confEl = document.getElementById('config-overview');
+    if (!confEl) {return;}
+    if (confEl.classList.contains('enabled')) {
+      document.body.classList.remove('overview');
+      confEl.classList.remove('enabled');
+      confEl.classList.add('disabled');
+    } else {
+      document.body.classList.add('overview');
+      confEl.classList.add('enabled');
+      confEl.classList.remove('disabled');
+    }
+  }
+</script>
 <body>
 
 <h1>
@@ -74,6 +133,14 @@
   </span>
   {% endif %}
 </h1>
+<div class="config">
+  <div class="config-menu">
+    <img width="20px" style="filter: invert(1)" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/PjwhRE9DVFlQRSBzdmcgIFBVQkxJQyAnLS8vVzNDLy9EVEQgU1ZHIDEuMS8vRU4nICAnaHR0cDovL3d3dy53My5vcmcvR3JhcGhpY3MvU1ZHLzEuMS9EVEQvc3ZnMTEuZHRkJz48c3ZnIGhlaWdodD0iMzJweCIgaWQ9IkxheWVyXzEiIHN0eWxlPSJlbmFibGUtYmFja2dyb3VuZDpuZXcgMCAwIDMyIDMyOyIgdmVyc2lvbj0iMS4xIiB2aWV3Qm94PSIwIDAgMzIgMzIiIHdpZHRoPSIzMnB4IiB4bWw6c3BhY2U9InByZXNlcnZlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIj48cGF0aCBkPSJNNCwxMGgyNGMxLjEwNCwwLDItMC44OTYsMi0ycy0wLjg5Ni0yLTItMkg0QzIuODk2LDYsMiw2Ljg5NiwyLDhTMi44OTYsMTAsNCwxMHogTTI4LDE0SDRjLTEuMTA0LDAtMiwwLjg5Ni0yLDIgIHMwLjg5NiwyLDIsMmgyNGMxLjEwNCwwLDItMC44OTYsMi0yUzI5LjEwNCwxNCwyOCwxNHogTTI4LDIySDRjLTEuMTA0LDAtMiwwLjg5Ni0yLDJzMC44OTYsMiwyLDJoMjRjMS4xMDQsMCwyLTAuODk2LDItMiAgUzI5LjEwNCwyMiwyOCwyMnoiLz48L3N2Zz4=" />
+  </div>
+  <div class="config-content">
+    <a id="config-overview" class="config-btn disabled" onclick="toggle()">概览模式<a>
+  </div>
+</div>
 {% for year_list in image_list %}
 <div class="main">
   {% if year_list %}
@@ -88,23 +155,23 @@
           <span>{{image['label']}}</span>月
         </div>
         {% endif %}
-        
+
         <div class="item-image">
             <a href="{{ image['link'] }}" target="_blank">
               <div class="image-wrapper">
                 <img src="{{ image['image_url'] }}">
               </div>
-              
+
             </a>
         </div>
-        
+
         <div class="item-title">
           {% if type == 'all' %}
           <span class="type-tag type-{{image['type']}}">
             {{image['type']}}
           </span><br>
           {% endif %}
-          {{image['title']}} <br>
+          <a href="{{ image['link'] }}" target="_blank">{{image['title']}}</a><br>
           <small>
             {{image['marked_date']}}&nbsp;
 
