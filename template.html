@@ -58,7 +58,9 @@
     background: linear-gradient(to bottom, #000000b8, #0101016e 75%, #ffffff00);
     color: white;
   }
+  body.overview .item-month-label {font-size: 1rem;}
   .item-month-label span {font-size: 3rem;}
+  body.overview .item-month-label span {font-size: 2rem;}
   .star {font-size: 0.7rem;}
   .config {
     display: block;
@@ -251,7 +253,7 @@
     hideElements.forEach(function(id) {
       document.getElementById(id).style.opacity = '0';
     })
-    html2canvas(document.body, {'allowTaint': true, 'loggin': false}).then(function(canvas) {
+    html2canvas(document.body, {'allowTaint': true, 'logging': false}).then(function(canvas) {
       document.body.style.overflowY = 'hidden';
       document.getElementById('shot').style.display = 'block';
       document.getElementById('canvas-container').appendChild(canvas);
