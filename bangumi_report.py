@@ -192,7 +192,7 @@ def main():
     parser.add_argument('-u', '--user_id', type=str, required=True)
     parser.add_argument('-m', '--max_conn', type=int, default=5)
     parser.add_argument('-y', '--year', type=str, default=str(datetime.datetime.now().year))
-    parser.add_argument('-t', '--type', type=str, default='all',
+    parser.add_argument('-t', '--type', type=str, default='anime',
                         help='report type from: all, anime, book, music, game, real')
     parser.add_argument('-d', '--debug', action='store_true', default=False)
     parser.add_argument('--version', action='version', version='%(prog)s 0.1')
