@@ -84,7 +84,7 @@ class ImageURLList:
                 star_num = -1
                 if item[4] != '':
                     star_num = int(item[4])
-                self.item_url_list.append({
+                self.item_url_list.insert(0, {
                     'image_url': img_url,
                     'marked_date': marked_time.strftime('%Y-%m-%d'),
                     'title': item[2],
@@ -120,6 +120,7 @@ class ImageURLList:
 
         url_prefix = collect_url + '?page='
         page_list = [url_prefix + str(x) for x in range(1, page_num + 1)]
+        page_list.reverse()
 
         thread_list = []
         for page_url in page_list:
