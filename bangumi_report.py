@@ -68,6 +68,7 @@ class ImageURLList:
             items = pattern.findall(response.text)
             logging.debug('%s items in %s', len(items), page_url)
 
+            page_idx = int(page_url.split('?page=')[1]) - 1
             folder_path = '%s-%s-%s-report' % (self.user_id, self.year, self.type)
             for item in items:
                 if self.year != 'all' and item[5][0:4] != self.year:
@@ -84,7 +85,7 @@ class ImageURLList:
                 star_num = -1
                 if item[4] != '':
                     star_num = int(item[4])
-                self.item_url_list.insert(0, {
+                self.item_url_list_page[page_idx].append({
                     'image_url': img_url,
                     'marked_date': marked_time.strftime('%Y-%m-%d'),
                     'title': item[2],
@@ -122,6 +123,8 @@ class ImageURLList:
         page_list = [url_prefix + str(x) for x in range(1, page_num + 1)]
         page_list.reverse()
 
+        self.item_url_list_page = [[] for i in range(page_num)]
+
         thread_list = []
         for page_url in page_list:
             thread = Thread(target=self.get_item_url, kwargs={'page_url': page_url, 'type': type})
@@ -129,9 +132,13 @@ class ImageURLList:
             thread.start()
 
         thread_num = len(thread_list)
-        for thread in thread_list:
-            thread.join()
-            logging.info('Finished: %s/%s', thread_num - active_count(), thread_num)
+        for i in range(thread_num):
+            thread_list[i].join()
+            this_page_idx = thread_num - i - 1
+            self.item_url_list += self.item_url_list_page[this_page_idx][::-1]
+            logging.info('Finished: %s/%s', i + 1, thread_num)
+
+        del self.item_url_list_page
 
     def get_list(self):
         if self.type == 'all':
