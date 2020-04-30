@@ -35,7 +35,7 @@ jobs:
       
     # Run generator
     - name: Run Generator
-      run: python3 $GITHUB_WORKSPACE/bangumi_report.py -u xiadong1994 -s -y all
+      run: python3 $GITHUB_WORKSPACE/bangumi_report.py -u xiadong1994 -y all
     
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v2
