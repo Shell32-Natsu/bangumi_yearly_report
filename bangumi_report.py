@@ -9,7 +9,7 @@ import datetime
 import json
 
 import requests
-from jinja2 import Environment, FileSystemLoader
+
 
 class ImageURLList:
     def __init__(self, user_id, max_connection, year, type, saveimg):
@@ -78,7 +78,7 @@ class ImageURLList:
                 if large_image_url.startswith('/img/'):
                     item_id = item[1].split('/')[-1]
                     large_image_url = self.get_missed_image(item_id)
-                img_url ='https:' + large_image_url
+                img_url = 'https:' + large_image_url
                 if self.saveimg:
                     img_url = self.save_img(img_url, folder_path)
                 marked_time = datetime.datetime.strptime(item[5], '%Y-%m-%d')
@@ -177,22 +177,66 @@ class ReportGenerator:
         if tmp_list:
             self.image_url_list.append(tmp_list)
 
-        self.env = Environment(loader=FileSystemLoader(os.getcwd()))
         self.user_id = user_id
         self.year = year
         self.type = type
 
-    def generate_report(self, to_stdout):
-        file_name = '%s-%s-%s-report.html' % (self.user_id, self.year, self.type)
-        logging.info('Output file: %s', file_name)
+    def generate_html(self, to_stdout):
+        from jinja2 import Environment, FileSystemLoader  # only import when generating HTML
+        self.env = Environment(loader=FileSystemLoader(os.getcwd()))
         logging.debug('Template file: %s', 'template.html')
         template = self.env.get_template('template.html')
-        html = template.render(user_id=self.user_id, image_list=self.image_url_list, year=self.year, type=self.type)
+        html = template.render(
+            user_id=self.user_id, image_list=self.image_url_list, year=self.year, type=self.type)
         if not to_stdout:
-            with open(file_name, 'w', encoding='utf-8') as f:
+            with open(self.file_name, 'w', encoding='utf-8') as f:
                 f.write(html)
         else:
             print(html)
+
+    def generate_markdown(self):
+        text = '# Bangumi List\n'
+        scorings = self.image_url_list.copy()
+        for items_in_same_year in scorings:
+            for item in items_in_same_year:
+                item['marked_year'] = int(item['marked_date'][0:4])
+                item['marked_month'] = int(item['marked_date'][5:7])
+        for items_in_same_year in scorings:
+            if items_in_same_year:
+                text += '\n## %s 年 (完成 %d 部作品)\n' % (
+                    items_in_same_year[0]['marked_year'], len(items_in_same_year))
+            else:
+                continue
+            items_in_same_month_dict = {k: [] for k in range(1, 13)}
+            for item in items_in_same_year:
+                items_in_same_month_dict[item['marked_month']].append(item)
+            for month in items_in_same_month_dict:
+                items_per_month = items_in_same_month_dict[month]
+                text += '\n### %d 月 (完成 %d 部作品)\n' % (month,
+                                                      len(items_per_month))
+                star_agg = {item['star']: [] for item in items_per_month}
+                for item in items_per_month:
+                    star_agg[item['star']].append(item)
+                for star in sorted(star_agg.keys(), reverse=True):
+                    items_with_same_star = star_agg[star]
+                    if star > 0:
+                        text += '\n%d 分 (%d 部作品)\n\n' % (star,
+                                                         len(items_with_same_star))
+                    else:
+                        text += '\n未评分 (%d 部作品)\n\n' % (len(items_with_same_star))
+                    for item in items_with_same_star:
+                        text += '- %s\n' % (item['title'])
+        with open(self.file_name, 'w', encoding='utf-8') as f:
+            f.write(text)
+
+    def generate_report(self, to_stdout, markdown):
+        self.file_name = '%s-%s-%s-report.%s' % (
+            self.user_id, self.year, self.type, 'html' if not markdown else 'md')
+        logging.info('Output file: %s', self.file_name)
+        if not markdown:
+            self.generate_html(to_stdout)
+        else:
+            self.generate_markdown()
 
 
 def main():
@@ -207,6 +251,7 @@ def main():
     parser.add_argument('-s', '--saveimg', action='store_true', default=False)
     parser.add_argument('-o', '--stdout', action='store_true', default=False)
     parser.add_argument('-q', '--quiet', action='store_true', default=False)
+    parser.add_argument('-md', '--markdown', action='store_true', default=False)
 
     args = parser.parse_args()
     if args.quiet:
@@ -222,7 +267,7 @@ def main():
 
     image_url_list = ImageURLList(args.user_id, args.max_conn, args.year, args.type, args.saveimg).get_list()
     report_generator = ReportGenerator(image_url_list, args.user_id, args.year, args.type)
-    report_generator.generate_report(args.stdout)
+    report_generator.generate_report(args.stdout, args.markdown)
 
 if __name__ == '__main__':
     main()
