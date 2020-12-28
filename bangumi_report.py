@@ -181,20 +181,15 @@ class ReportGenerator:
         self.year = year
         self.type = type
 
-    def generate_html(self, to_stdout):
+    def generate_html(self) -> str:
         from jinja2 import Environment, FileSystemLoader  # only import when generating HTML
         self.env = Environment(loader=FileSystemLoader(os.getcwd()))
         logging.debug('Template file: %s', 'template.html')
         template = self.env.get_template('template.html')
-        html = template.render(
-            user_id=self.user_id, image_list=self.image_url_list, year=self.year, type=self.type)
-        if not to_stdout:
-            with open(self.file_name, 'w', encoding='utf-8') as f:
-                f.write(html)
-        else:
-            print(html)
+        html = template.render(user_id=self.user_id, image_list=self.image_url_list, year=self.year, type=self.type)
+        return html
 
-    def generate_markdown(self):
+    def generate_markdown(self) -> str:
         text = '# Bangumi List\n'
         scorings = self.image_url_list.copy()
         for items_in_same_year in scorings:
@@ -203,8 +198,7 @@ class ReportGenerator:
                 item['marked_month'] = int(item['marked_date'][5:7])
         for items_in_same_year in scorings:
             if items_in_same_year:
-                text += '\n## %s 年 (完成 %d 部作品)\n' % (
-                    items_in_same_year[0]['marked_year'], len(items_in_same_year))
+                text += '\n## %s 年 (完成 %d 部作品)\n' % (items_in_same_year[0]['marked_year'], len(items_in_same_year))
             else:
                 continue
             items_in_same_month_dict = {k: [] for k in range(1, 13)}
@@ -212,31 +206,37 @@ class ReportGenerator:
                 items_in_same_month_dict[item['marked_month']].append(item)
             for month in items_in_same_month_dict:
                 items_per_month = items_in_same_month_dict[month]
-                text += '\n### %d 月 (完成 %d 部作品)\n' % (month,
-                                                      len(items_per_month))
+                text += '\n### %d 月 (完成 %d 部作品)\n' % (month, len(items_per_month))
                 star_agg = {item['star']: [] for item in items_per_month}
                 for item in items_per_month:
                     star_agg[item['star']].append(item)
                 for star in sorted(star_agg.keys(), reverse=True):
                     items_with_same_star = star_agg[star]
                     if star > 0:
-                        text += '\n%d 分 (%d 部作品)\n\n' % (star,
-                                                         len(items_with_same_star))
+                        text += '\n%d 分 (%d 部作品)\n\n' % (star, len(items_with_same_star))
                     else:
                         text += '\n未评分 (%d 部作品)\n\n' % (len(items_with_same_star))
                     for item in items_with_same_star:
                         text += '- %s\n' % (item['title'])
-        with open(self.file_name, 'w', encoding='utf-8') as f:
-            f.write(text)
+        return text
 
     def generate_report(self, to_stdout, markdown):
-        self.file_name = '%s-%s-%s-report.%s' % (
-            self.user_id, self.year, self.type, 'html' if not markdown else 'md')
-        logging.info('Output file: %s', self.file_name)
+
+        self.file_name = '%s-%s-%s-report.%s' % (self.user_id, self.year, self.type, 'html' if not markdown else 'md')
+
+        content = ''
         if not markdown:
-            self.generate_html(to_stdout)
+            content = self.generate_html()
         else:
-            self.generate_markdown()
+            content = self.generate_markdown()
+        
+        if not to_stdout:
+            logging.info('Output file: %s', self.file_name)
+            with open(self.file_name, 'w', encoding='utf-8') as f:
+                f.write(content)
+        else:
+            logging.info('No output file, write to stdout directly')
+            print(content)
 
 
 def main():
