@@ -73,7 +73,7 @@ class ImageURLList:
             for item in items:
                 if self.year != 'all' and item[5][0:4] != self.year:
                     continue
-                large_image_url = item[0].replace('/s/', '/l/')
+                large_image_url = re.sub(r'cover/./', 'cover/l/', item[0])
                 # The image is not shown to guest. Use API to get it
                 if large_image_url.startswith('/img/'):
                     item_id = item[1].split('/')[-1]
