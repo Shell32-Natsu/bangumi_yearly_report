@@ -20,33 +20,43 @@ class ImageURLList:
         self.type = type
         self.saveimg = saveimg
         self.session = requests.Session()
-        self.session.headers = {'User-Agent': 'Mozilla/5.0 Chrome/77.0.3865.120'}
+        self.session.headers = {
+            'User-Agent': 'Mozilla/5.0 Chrome/77.0.3865.120'}
+
+        retries = requests.adapters.Retry(total=5,
+                                          backoff_factor=0.1,
+                                          status_forcelist=[500, 502, 503, 504])
+        self.session.mount(
+            'https://', requests.adapters.HTTPAdapter(max_retries=retries))
 
     def save_img(self, img_url, file_path='img'):
         try:
             if not os.path.exists(file_path):
-                logging.info('Folder "%s" unexisted, recreated',file_path)
+                logging.info('Folder "%s" unexisted, recreated', file_path)
                 os.makedirs(file_path)
             file_suffix = os.path.splitext(img_url)[1]
             file_name = img_url.split("/")[-1]
-            filename = '{}{}{}{}'.format(file_path,os.sep,file_name,file_suffix)
-            logging.debug('image saved: %s',filename)
+            filename = '{}{}{}{}'.format(
+                file_path, os.sep, file_name, file_suffix)
+            logging.debug('image saved: %s', filename)
             im = self.session.get(img_url)
             if im.status_code == 200:
-                open(filename,'wb').write(im.content)
+                open(filename, 'wb').write(im.content)
             return filename
-        except IOError as e: logging.error('IOError : %s',e)
-        except Exception as e: logging.error('Error : %s',e)
+        except IOError as e:
+            logging.error('IOError : %s', e)
+        except Exception as e:
+            logging.error('Error : %s', e)
 
-    def get_missed_image (self, item_id):
-        bgm_api_prefix = 'http://api.bgm.tv'
+    def get_missed_image(self, item_id):
+        bgm_api_prefix = 'https://api.bgm.tv'
         item_url = bgm_api_prefix + '/subject/' + item_id
         default_ret = '//bgm.tv/img/no_icon_subject.png'
 
         response = self.session.get(item_url)
         if response.status_code != 200:
-            logging.error('\nURL: %s\nStatus code: %s\nContent: %s\n', \
-                item_url, response.status_code, response.text)
+            logging.error('\nURL: %s\nStatus code: %s\nContent: %s\n',
+                          item_url, response.status_code, response.text)
             return default_ret
         res_json = json.loads(response.text)
         if 'images' not in res_json or 'large' not in res_json['images']:
@@ -58,18 +68,20 @@ class ImageURLList:
             logging.debug('Parsing %s', page_url)
             response = self.session.get(page_url)
             if response.status_code != 200:
-                logging.error('\nURL: %s\nStatus code: %s\nContent: %s\n', \
-                    page_url, response.status_code, response.text)
+                logging.error('\nURL: %s\nStatus code: %s\nContent: %s\n',
+                              page_url, response.status_code, response.text)
                 return
 
-            pattern = re.compile(r'<img src="(.*?)" class="cover" />.*?<a href="(/subject/\d+?)" class="l">(.*?)</a>.*?(<span class="starstop-s"><span class="starlight stars(\d+?)"></span></span>)?<span class="tip_j">(\d{4}-\d{1,2}-\d{1,2})</span>', re.S)
+            pattern = re.compile(
+                r'<img src="(.*?)" class="cover" />.*?<a href="(/subject/\d+?)" class="l">(.*?)</a>.*?(<span class="starstop-s"><span class="starlight stars(\d+?)"></span></span>)?<span class="tip_j">(\d{4}-\d{1,2}-\d{1,2})</span>', re.S)
             # item image_url, link, title, [wtf], starinfo, marked_time
             response.encoding = 'utf-8'
             items = pattern.findall(response.text)
             logging.debug('%s items in %s', len(items), page_url)
 
             page_idx = int(page_url.split('?page=')[1]) - 1
-            folder_path = '%s-%s-%s-report' % (self.user_id, self.year, self.type)
+            folder_path = '%s-%s-%s-report' % (self.user_id,
+                                               self.year, self.type)
             for item in items:
                 if self.year != 'all' and item[5][0:4] != self.year:
                     continue
@@ -89,13 +101,13 @@ class ImageURLList:
                     'image_url': img_url,
                     'marked_date': marked_time.strftime('%Y-%m-%d'),
                     'title': item[2],
-                    'link': 'http://bgm.tv' + item[1],
+                    'link': 'https://bgm.tv' + item[1],
                     'star': star_num,
                     'type': type
                 })
 
     def get_list_type(self, type):
-        list_url = "http://bgm.tv/%s/list/%s" % (type, self.user_id)
+        list_url = "https://bgm.tv/%s/list/%s" % (type, self.user_id)
         collect_url = list_url + '/collect'
         logging.info('Starting collect type of %s', type)
         logging.debug('collect_url=%s', collect_url)
@@ -103,7 +115,8 @@ class ImageURLList:
         page_num = 0
         response = self.session.get(collect_url)
         if response.status_code != 200:
-            logging.error('\nStatus code: %s\nContent: %s\n', response.status_code, response.text)
+            logging.error('\nStatus code: %s\nContent: %s\n',
+                          response.status_code, response.text)
             return
 
         pattern = re.compile(r'.*&nbsp;(\d+)&nbsp;/&nbsp;(\d+)&nbsp;.*')
@@ -127,7 +140,8 @@ class ImageURLList:
 
         thread_list = []
         for page_url in page_list:
-            thread = Thread(target=self.get_item_url, kwargs={'page_url': page_url, 'type': type})
+            thread = Thread(target=self.get_item_url, kwargs={
+                            'page_url': page_url, 'type': type})
             thread_list.append(thread)
             thread.start()
 
@@ -148,7 +162,8 @@ class ImageURLList:
             self.get_list_type(self.type)
 
         # print(self.item_url_list)
-        logging.info('Finished getting item URLs. Got %s items', len(self.item_url_list))
+        logging.info('Finished getting item URLs. Got %s items',
+                     len(self.item_url_list))
         return self.item_url_list
 
 
@@ -182,11 +197,13 @@ class ReportGenerator:
         self.type = type
 
     def generate_html(self) -> str:
-        from jinja2 import Environment, FileSystemLoader  # only import when generating HTML
+        # only import when generating HTML
+        from jinja2 import Environment, FileSystemLoader
         self.env = Environment(loader=FileSystemLoader(os.getcwd()))
         logging.debug('Template file: %s', 'template.html')
         template = self.env.get_template('template.html')
-        html = template.render(user_id=self.user_id, image_list=self.image_url_list, year=self.year, type=self.type)
+        html = template.render(
+            user_id=self.user_id, image_list=self.image_url_list, year=self.year, type=self.type)
         return html
 
     def generate_markdown(self) -> str:
@@ -198,7 +215,8 @@ class ReportGenerator:
                 item['marked_month'] = int(item['marked_date'][5:7])
         for items_in_same_year in scorings:
             if items_in_same_year:
-                text += '\n## %s 年 (完成 %d 部作品)\n' % (items_in_same_year[0]['marked_year'], len(items_in_same_year))
+                text += '\n## %s 年 (完成 %d 部作品)\n' % (
+                    items_in_same_year[0]['marked_year'], len(items_in_same_year))
             else:
                 continue
             items_in_same_month_dict = {k: [] for k in range(1, 13)}
@@ -206,14 +224,16 @@ class ReportGenerator:
                 items_in_same_month_dict[item['marked_month']].append(item)
             for month in items_in_same_month_dict:
                 items_per_month = items_in_same_month_dict[month]
-                text += '\n### %d 月 (完成 %d 部作品)\n' % (month, len(items_per_month))
+                text += '\n### %d 月 (完成 %d 部作品)\n' % (month,
+                                                      len(items_per_month))
                 star_agg = {item['star']: [] for item in items_per_month}
                 for item in items_per_month:
                     star_agg[item['star']].append(item)
                 for star in sorted(star_agg.keys(), reverse=True):
                     items_with_same_star = star_agg[star]
                     if star > 0:
-                        text += '\n%d 分 (%d 部作品)\n\n' % (star, len(items_with_same_star))
+                        text += '\n%d 分 (%d 部作品)\n\n' % (star,
+                                                         len(items_with_same_star))
                     else:
                         text += '\n未评分 (%d 部作品)\n\n' % (len(items_with_same_star))
                     for item in items_with_same_star:
@@ -222,14 +242,15 @@ class ReportGenerator:
 
     def generate_report(self, to_stdout, markdown):
 
-        self.file_name = '%s-%s-%s-report.%s' % (self.user_id, self.year, self.type, 'html' if not markdown else 'md')
+        self.file_name = '%s-%s-%s-report.%s' % (
+            self.user_id, self.year, self.type, 'html' if not markdown else 'md')
 
         content = ''
         if not markdown:
             content = self.generate_html()
         else:
             content = self.generate_markdown()
-        
+
         if not to_stdout:
             logging.info('Output file: %s', self.file_name)
             with open(self.file_name, 'w', encoding='utf-8') as f:
@@ -240,10 +261,12 @@ class ReportGenerator:
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Generate Bangumi user report.')
+    parser = argparse.ArgumentParser(
+        description='Generate Bangumi user report.')
     parser.add_argument('-u', '--user_id', type=str, required=True)
     parser.add_argument('-m', '--max_conn', type=int, default=5)
-    parser.add_argument('-y', '--year', type=str, default=str(datetime.datetime.now().year))
+    parser.add_argument('-y', '--year', type=str,
+                        default=str(datetime.datetime.now().year))
     parser.add_argument('-t', '--type', type=str, default='anime',
                         help='report type from: all, anime, book, music, game, real')
     parser.add_argument('-d', '--debug', action='store_true', default=False)
@@ -251,23 +274,28 @@ def main():
     parser.add_argument('-s', '--saveimg', action='store_true', default=False)
     parser.add_argument('-o', '--stdout', action='store_true', default=False)
     parser.add_argument('-q', '--quiet', action='store_true', default=False)
-    parser.add_argument('-md', '--markdown', action='store_true', default=False)
+    parser.add_argument('-md', '--markdown',
+                        action='store_true', default=False)
 
     args = parser.parse_args()
     if args.quiet:
         logging.basicConfig(level=logging.CRITICAL)
     elif args.debug:
-        logging.basicConfig(level=logging.DEBUG, \
-                    format='[%(asctime)s][%(filename)s][%(lineno)s][%(levelname)s][%(process)d][%(message)s]')
+        logging.basicConfig(level=logging.DEBUG,
+                            format='[%(asctime)s][%(filename)s][%(lineno)s][%(levelname)s][%(process)d][%(message)s]')
     else:
-        logging.basicConfig(level=logging.INFO, \
-                    format='[%(asctime)s][%(levelname)s][%(message)s]')
+        logging.basicConfig(level=logging.INFO,
+                            format='[%(asctime)s][%(levelname)s][%(message)s]')
 
-    logging.info('user_id=\'%s\', max_conn=%s, year=%s, type=%s', args.user_id, args.max_conn, args.year, args.type)
+    logging.info('user_id=\'%s\', max_conn=%s, year=%s, type=%s',
+                 args.user_id, args.max_conn, args.year, args.type)
 
-    image_url_list = ImageURLList(args.user_id, args.max_conn, args.year, args.type, args.saveimg).get_list()
-    report_generator = ReportGenerator(image_url_list, args.user_id, args.year, args.type)
+    image_url_list = ImageURLList(
+        args.user_id, args.max_conn, args.year, args.type, args.saveimg).get_list()
+    report_generator = ReportGenerator(
+        image_url_list, args.user_id, args.year, args.type)
     report_generator.generate_report(args.stdout, args.markdown)
+
 
 if __name__ == '__main__':
     main()
