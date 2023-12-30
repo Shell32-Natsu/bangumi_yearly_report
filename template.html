@@ -141,6 +141,7 @@
   <div class="config-content">
     <a id="config-overview" class="config-btn disabled" onclick="toggle()">概览模式</a>
     <a id="action-shot" class="config-btn" onclick="shot()">截图</a>
+    <a id="action-hide" class="config-btn" onclick="hide()">隐藏</a>
   </div>
 </div>
 {% for year_list in image_list %}
@@ -287,6 +288,22 @@
       document.getElementById('shot').style.display = 'none';
     }, 300)
   }
+
+  function hide() {
+      console.log("hide 18x");
+      const ulElements = document.querySelectorAll('.main ul');
+
+      ulElements.forEach((ul) => {
+        const listItemElements = ul.querySelectorAll('li');
+        listItemElements.forEach((li) => {
+          const imgElement = li.querySelector('.item-box .item-image img');
+          console.log(li)
+          if (imgElement && imgElement.getAttribute('src') === 'https://bgm.tv/img/no_icon_subject.png') {
+            li.style.display = 'none';
+          }
+        });
+      });
+    }
 </script>
 </body>
 </html>
