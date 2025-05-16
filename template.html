@@ -1,283 +1,648 @@
-<html>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bangumi Report for {{ user_id }}</title>
-<style>
-  body {font-family: sans-serif; background: #1c1c1c; color: white; margin: 0;}
-  .main {width: 80%; margin: auto; padding: 0}
-  .main h2 {width: 100%; float: left}
-  body ul {list-style-type: none; padding: 0}
-  body ul li {float: left; width: 12.5%;}
-  body.overview ul li {width: 6.25%;}
-  div.image-wrapper {padding-top: 140%;}
-  div.image-wrapper img {width: 100%; top: 0; height: 100%; position: absolute;}
-  body h1 {text-align: center; margin: 10px 60px;}
-  .type-tag {
-    display: inline-block;
-    margin: 0 2px;
-    padding: 0 0.2rem;
-    font-size: 0.7rem;
-    color: white;
-    background-color: #ff5500;
-    border: 1px solid transparent;
-    border-radius: 0.2rem;
-    opacity: 0.8;
-    vertical-align: top;
-  }
-  .type-anime {background-color: #f5222d;}
-  .type-book {background-color: #fa8c16;}
-  .type-music {background-color: #52c41a;}
-  .type-game {background-color: #1890ff;}
-  .type-real {background-color: #722ed1;}
-  .item-title {
-    display: none;
-    position: absolute;
-    width: 100%;
-    min-width: 72px;
-    z-index: 1;
-    bottom: 0;
-    font-size: 1rem;
-    background: linear-gradient(to top, #000000b8, #0101016e 75%, #ffffff00);
-    color: white;
-    padding-top: 1rem;
-  }
-  .item-title a {
-    color: white;
-    text-decoration: none;
-  }
-  .item-box {position: relative;}
-  .item-box:hover {box-shadow: 0 0 10px 5px #4c4c4c; z-index: 1;}
-  .item-box:hover > .item-title {display: block;}
-  .item-image {position: relative;}
-  .item-month-label {
-    position: absolute;
-    width: 100%;
-    z-index: 1;
-    top: 0;
-    font-size: 1.5rem;
-    background: linear-gradient(to bottom, #000000b8, #0101016e 75%, #ffffff00);
-    color: white;
-  }
-  body.overview .item-month-label {font-size: 1rem;}
-  .item-month-label span {font-size: 3rem;}
-  body.overview .item-month-label span {font-size: 2rem;}
-  .star {font-size: 0.7rem;}
-  .config {
-    display: block;
-    position: absolute;
-    right: 0;
-    top: 0;
-    margin: 5px;
-    color: darkgray;
-    font-size: 0.8rem;
-    text-align: center;
-  }
-  .config-menu {display: block; opacity: 0.7;}
-  .config:hover .config-menu {display: none;}
-  .config-content {display: none;}
-  .config:hover .config-content {display: block;}
-  .config-btn {
-    display: block;
-    padding: 1px 3px;
-    margin-bottom: 3px;
-    color: #d8d8d8;
-    text-shadow: 0px 1px 2px #444;
-    text-decoration: none;
-    cursor: pointer;
-    border: 1px solid #6e6e6e;
-    background-image: linear-gradient(to bottom, #767677 0%, #747474 100%);
-    background-repeat: repeat-x;
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff767677', endColorstr='#ff747474', GradientType=0);
-    -webkit-box-shadow: 0 1px 2px #393939, inset 0 1px 1px #7c7c7c;
-    -moz-box-shadow: 0 1px 2px #393939, inset 0 1px 1px #7c7c7c;
-    box-shadow: 0 1px 2px #393939, inset 0 1px 1px #7c7c7c;
-    -moz-border-radius: 4px;
-    -webkit-border-radius: 4px;
-    border-radius: 4px;
-  }
-  .config-btn.enabled {
-    color: #FFF;
-    background-image: linear-gradient(to bottom, #397de8 0%, #3072dc 100%);
-    background-repeat: repeat-x;
-  }
-  #github-link {bottom: 0; padding: 0.5rem; clear: both; text-align: center;}
-  #github-link img {margin: auto; height: 2rem;}
-  @media (max-width: 1300px) {
-    .main {width: 100%;}
-  }
-  @media (max-width: 800px) {
-    body ul li {width: 33.333333%;}
-    body.overview ul li {width: 10%; min-width: 55px;}
-    div.image-wrapper {height: 0; width: 100%; padding-top: 140%;}
-  }
-  @media (max-width: 575px) {
-    body h1 {margin-left: 0;}
-  }
-</style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bangumi Report for {{ user_id }}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-bg: #0f0f0f;
+      --secondary-bg: #1a1a1a;
+      --card-bg: #2a2a2a;
+      --accent-color: #3b82f6;
+      --text-primary: #ffffff;
+      --text-secondary: #a1a1aa;
+      --border-color: #404040;
+      --hover-shadow: rgba(59, 130, 246, 0.3);
+      --gradient-overlay: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, transparent 100%);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--primary-bg);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .main {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    h1 {
+      text-align: center;
+      margin: 3rem 0 4rem;
+      font-size: 3rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    h1 .type-tag {
+      margin: 0;
+      vertical-align: middle;
+      color: white !important;
+      -webkit-text-fill-color: white !important;
+    }
+
+    .main h2 {
+      font-size: 2.5rem;
+      font-weight: 600;
+      margin: 4rem 0 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 3px solid var(--accent-color);
+      position: relative;
+      width: 100%;
+      clear: both;
+    }
+
+    .main h2::after {
+      content: '';
+      position: absolute;
+      bottom: -3px;
+      left: 0;
+      width: 100px;
+      height: 3px;
+      background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+      border-radius: 2px;
+    }
+
+    ul {
+      list-style: none;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 1.5rem;
+      padding: 2rem 0;
+    }
+
+    body.overview ul {
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 1rem;
+    }
+
+    li {
+      display: block;
+      width: 100%;
+    }
+
+    .item-box {
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      background: var(--card-bg);
+      border: 2px solid transparent;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+    }
+
+    .item-box:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 0 2px var(--accent-color);
+      border-color: var(--accent-color);
+    }
+
+    .image-wrapper {
+      position: relative;
+      width: 100%;
+      padding-top: 140%;
+      overflow: hidden;
+    }
+
+    .image-wrapper img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+
+    .item-box:hover .image-wrapper img {
+      transform: scale(1.05);
+    }
+
+    .item-month-label {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 2;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.3) 50%, transparent 100%);
+      color: white;
+      padding: 1rem;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .item-month-label span {
+      font-size: 2.5rem;
+      font-weight: 700;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+
+    body.overview .item-month-label {
+      padding: 0.5rem;
+    }
+
+    body.overview .item-month-label span {
+      font-size: 1.8rem;
+    }
+
+    .item-title {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.5) 70%, transparent 100%);
+      color: white;
+      padding: 2rem 1rem 1rem;
+      z-index: 1;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.3s ease;
+    }
+
+    .item-box:hover .item-title {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .item-title a {
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.95rem;
+      line-height: 1.4;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    .item-title small {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .type-tag {
+      display: inline-block;
+      margin: 0 0.25rem 0.5rem 0;
+      padding: 0.25rem 0.75rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: white;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .type-anime { background: linear-gradient(135deg, #f5222d, #ff4757); }
+    .type-book { background: linear-gradient(135deg, #fa8c16, #ffa726); }
+    .type-music { background: linear-gradient(135deg, #52c41a, #66bb6a); }
+    .type-game { background: linear-gradient(135deg, #1890ff, #42a5f5); }
+    .type-real { background: linear-gradient(135deg, #722ed1, #8e24aa); }
+
+    .star {
+      color: #ffd700;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    }
+
+    .config {
+      position: fixed;
+      top: 2rem;
+      right: 2rem;
+      z-index: 1000;
+      background: var(--card-bg);
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+
+    .config-menu {
+      padding: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border-radius: 12px;
+    }
+
+    .config-menu:hover {
+      background: var(--accent-color);
+    }
+
+    .config-menu img {
+      width: 24px;
+      height: 24px;
+      filter: invert(1);
+    }
+
+    .config:hover .config-menu {
+      display: none;
+    }
+
+    .config-content {
+      display: none;
+      padding: 1rem;
+      min-width: 160px;
+    }
+
+    .config:hover .config-content {
+      display: block;
+    }
+
+    .config-btn {
+      display: block;
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.5rem;
+      color: var(--text-primary);
+      text-decoration: none;
+      cursor: pointer;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background: var(--secondary-bg);
+      transition: all 0.2s ease;
+      font-weight: 500;
+      text-align: center;
+    }
+
+    .config-btn:hover {
+      background: var(--accent-color);
+      border-color: var(--accent-color);
+      transform: translateY(-1px);
+    }
+
+    .config-btn:last-child {
+      margin-bottom: 0;
+    }
+
+    .config-btn.enabled {
+      background: var(--accent-color);
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    }
+
+    #github-link {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      z-index: 1000;
+    }
+
+    #github-link a {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 60px;
+      height: 60px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 50%;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+
+    #github-link a:hover {
+      background: var(--accent-color);
+      border-color: var(--accent-color);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+    }
+
+    #github-link img {
+      width: 28px;
+      height: 28px;
+    }
+
+    #shot {
+      display: none;
+      background: rgba(0, 0, 0, 0.8);
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 99999998;
+      width: 100%;
+      height: 100%;
+      backdrop-filter: blur(8px);
+    }
+
+    #shot img.close {
+      position: absolute;
+      right: 2rem;
+      top: 2rem;
+      cursor: pointer;
+      width: 32px;
+      height: 32px;
+      padding: 4px;
+      background: var(--card-bg);
+      border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+
+    #shot img.close:hover {
+      background: var(--accent-color);
+      transform: scale(1.1);
+    }
+
+    #canvas-container {
+      overflow-y: auto;
+      max-height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4rem;
+    }
+
+    #shot canvas {
+      max-width: 100%;
+      max-height: 100%;
+      border-radius: 12px;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+      opacity: 0;
+      transform: scale(0.8);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1200px) {
+      .main {
+        padding: 0 1.5rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 2.5rem;
+        margin: 2rem 0 3rem;
+      }
+
+      .main h2 {
+        font-size: 2rem;
+        margin: 3rem 0 1.5rem;
+      }
+
+      ul {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 1rem;
+        padding: 1rem 0;
+      }
+
+      body.overview ul {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 0.75rem;
+      }
+
+      .config {
+        top: 1rem;
+        right: 1rem;
+      }
+
+      #github-link {
+        bottom: 1rem;
+        right: 1rem;
+      }
+
+      #github-link a {
+        width: 50px;
+        height: 50px;
+      }
+
+      #github-link img {
+        width: 24px;
+        height: 24px;
+      }
+
+      #canvas-container {
+        padding: 2rem 1rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 2rem;
+      }
+
+      .main {
+        padding: 0 1rem;
+      }
+
+      ul {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      }
+
+      .item-title {
+        padding: 1.5rem 0.75rem 0.75rem;
+      }
+
+      .item-month-label {
+        padding: 0.75rem;
+      }
+
+      .item-month-label span {
+        font-size: 2rem;
+      }
+
+      body.overview .item-month-label span {
+        font-size: 1.5rem;
+      }
+    }
+
+    /* Loading animation */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .main {
+      animation: fadeInUp 0.6s ease-out;
+    }
+
+    /* Scroll behavior */
+    html {
+      scroll-behavior: smooth;
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--secondary-bg);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--accent-color);
+    }
+
+  </style>
+</head>
 <body>
+  <h1>
+    Bangumi Report for {{ user_id }}
+    {% if type != 'all' %}
+    <span class="type-tag type-{{type}}">
+      {{type}}
+    </span>
+    {% endif %}
+  </h1>
 
-<h1>
-  Bangumi Report for {{ user_id }}
-  {% if type != 'all' %}
-  <span class="type-tag type-{{type}}">
-    {{type}}
-  </span>
-  {% endif %}
-</h1>
-<div id="config" class="config" data-html2canvas-ignore>
-  <div class="config-menu">
-    <img style="filter: invert(1)" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/PjwhRE9DVFlQRSBzdmcgIFBVQkxJQyAnLS8vVzNDLy9EVEQgU1ZHIDEuMS8vRU4nICAnaHR0cDovL3d3dy53My5vcmcvR3JhcGhpY3MvU1ZHLzEuMS9EVEQvc3ZnMTEuZHRkJz48c3ZnIGhlaWdodD0iMzJweCIgaWQ9IkxheWVyXzEiIHN0eWxlPSJlbmFibGUtYmFja2dyb3VuZDpuZXcgMCAwIDMyIDMyOyIgdmVyc2lvbj0iMS4xIiB2aWV3Qm94PSIwIDAgMzIgMzIiIHdpZHRoPSIzMnB4IiB4bWw6c3BhY2U9InByZXNlcnZlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIj48cGF0aCBkPSJNNCwxMGgyNGMxLjEwNCwwLDItMC44OTYsMi0ycy0wLjg5Ni0yLTItMkg0QzIuODk2LDYsMiw2Ljg5NiwyLDhTMi44OTYsMTAsNCwxMHogTTI4LDE0SDRjLTEuMTA0LDAtMiwwLjg5Ni0yLDIgIHMwLjg5NiwyLDIsMmgyNGMxLjEwNCwwLDItMC44OTYsMi0yUzI5LjEwNCwxNCwyOCwxNHogTTI4LDIySDRjLTEuMTA0LDAtMiwwLjg5Ni0yLDJzMC44OTYsMiwyLDJoMjRjMS4xMDQsMCwyLTAuODk2LDItMiAgUzI5LjEwNCwyMiwyOCwyMnoiLz48L3N2Zz4=" />
+  <div id="config" class="config" data-html2canvas-ignore>
+    <div class="config-menu">
+      <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/PjwhRE9DVFlQRSBzdmcgIFBVQkxJQyAnLS8vVzNDLy9EVEQgU1ZHIDEuMS8vRU4nICAnaHR0cDovL3d3dy53My5vcmcvR3JhcGhpY3MvU1ZHLzEuMS9EVEQvc3ZnMTEuZHRkJz48c3ZnIGhlaWdodD0iMzJweCIgaWQ9IkxheWVyXzEiIHN0eWxlPSJlbmFibGUtYmFja2dyb3VuZDpuZXcgMCAwIDMyIDMyOyIgdmVyc2lvbj0iMS4xIiB2aWV3Qm94PSIwIDAgMzIgMzIiIHdpZHRoPSIzMnB4IiB4bWw6c3BhY2U9InByZXNlcnZlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIj48cGF0aCBkPSJNNCwxMGgyNGMxLjEwNCwwLDItMC44OTYsMi0ycy0wLjg5Ni0yLTItMkg0QzIuODk2LDYsMiw2Ljg5NiwyLDhTMi44OTYsMTAsNCwxMHogTTI4LDE0SDRjLTEuMTA0LDAtMiwwLjg5Ni0yLDIgIHMwLjg5NiwyLDIsMmgyNGMxLjEwNCwwLDItMC44OTYsMi0yUzI5LjEwNCwxNCwyOCwxNHogTTI4LDIySDRjLTEuMTA0LDAtMiwwLjg5Ni0yLDJzMC44OTYsMiwyLDJoMjRjMS4xMDQsMCwyLTAuODk2LDItMiAgUzI5LjEwNCwyMiwyOCwyMnoiLz48L3N2Zz4=" alt="Menu" />
+    </div>
+    <div class="config-content">
+      <a id="config-overview" class="config-btn disabled" onclick="toggle()">概览模式</a>
+      <a id="action-shot" class="config-btn" onclick="shot()">截图</a>
+      <a id="action-hide" class="config-btn" onclick="hide()">隐藏</a>
+    </div>
   </div>
-  <div class="config-content">
-    <a id="config-overview" class="config-btn disabled" onclick="toggle()">概览模式</a>
-    <a id="action-shot" class="config-btn" onclick="shot()">截图</a>
-    <a id="action-hide" class="config-btn" onclick="hide()">隐藏</a>
-  </div>
-</div>
-{% for year_list in image_list %}
-<div class="main">
-  {% if year_list %}
-  <h2>{{year_list[0]['marked_date'][0:4]}}</h2>
-  {% endif %}
-  <ul>
-  {% for image in year_list %}
-    <li>
-      <div class="item-box">
-        {% if image['label'] != 0 %}
-        <div class="item-month-label">
-          <span>{{image['label']}}</span>月
-        </div>
-        {% endif %}
 
-        <div class="item-image">
-            <a href="{{ image['link'] }}" target="_blank">
-              <div class="image-wrapper">
-                <img src="{{ image['image_url'] }}">
-              </div>
-
-            </a>
-        </div>
-
-        <div class="item-title">
-          {% if type == 'all' %}
-          <span class="type-tag type-{{image['type']}}">
-            {{image['type']}}
-          </span><br>
+  {% for year_list in image_list %}
+  <div class="main">
+    {% if year_list %}
+    <h2>{{year_list[0]['marked_date'][0:4]}}</h2>
+    {% endif %}
+    <ul>
+    {% for image in year_list %}
+      <li>
+        <div class="item-box">
+          {% if image['label'] != 0 %}
+          <div class="item-month-label">
+            <span>{{image['label']}}</span>月
+          </div>
           {% endif %}
-          <a href="{{ image['link'] }}" target="_blank">{{image['title']}}</a><br>
-          <small>
-            {{image['marked_date']}}&nbsp;
 
-            {% if image['star'] >= 0 %}
-            {{image['star']}}&#x2605;
-            {#<span class="star">
-              {%- for i in range(0, image['star'], 2) %}
-                {%- if image['star'] - i < 2 %}&#x2606;{%- else %}&#x2605;{%- endif %}
-              {%- endfor %}
-            </span>#}
+          <div class="item-image">
+              <a href="{{ image['link'] }}" target="_blank">
+                <div class="image-wrapper">
+                  <img src="{{ image['image_url'] }}" alt="{{ image['title'] }}">
+                </div>
+              </a>
+          </div>
+
+          <div class="item-title">
+            {% if type == 'all' %}
+            <span class="type-tag type-{{image['type']}}">
+              {{image['type']}}
+            </span>
             {% endif %}
-          </small>
+            <a href="{{ image['link'] }}" target="_blank">{{image['title']}}</a>
+            <small>
+              {{image['marked_date']}}
+              {% if image['star'] >= 0 %}
+              <span class="star">{{image['star']}}★</span>
+              {% endif %}
+            </small>
+          </div>
         </div>
-      </div>
-    </li>
-    {% endfor %}
-  </ul>
-</div>
-{% endfor %}
-<div id="github-link" data-html2canvas-ignore>
-  <a href="https://github.com/Shell32-Natsu/bangumi_yearly_report" target="_blank" title="GitHub">
-    <img src="data:image/svg+xml;utf8;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iaXNvLTg4NTktMSI/Pgo8IS0tIEdlbmVyYXRvcjogQWRvYmUgSWxsdXN0cmF0b3IgMTYuMC4wLCBTVkcgRXhwb3J0IFBsdWctSW4gLiBTVkcgVmVyc2lvbjogNi4wMCBCdWlsZCAwKSAgLS0+CjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+CjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgdmVyc2lvbj0iMS4xIiBpZD0iQ2FwYV8xIiB4PSIwcHgiIHk9IjBweCIgd2lkdGg9IjE2cHgiIGhlaWdodD0iMTZweCIgdmlld0JveD0iMCAwIDQzOC41NDkgNDM4LjU0OSIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAwIDAgNDM4LjU0OSA0MzguNTQ5OyIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+CjxnPgoJPHBhdGggZD0iTTQwOS4xMzIsMTE0LjU3M2MtMTkuNjA4LTMzLjU5Ni00Ni4yMDUtNjAuMTk0LTc5Ljc5OC03OS44QzI5NS43MzYsMTUuMTY2LDI1OS4wNTcsNS4zNjUsMjE5LjI3MSw1LjM2NSAgIGMtMzkuNzgxLDAtNzYuNDcyLDkuODA0LTExMC4wNjMsMjkuNDA4Yy0zMy41OTYsMTkuNjA1LTYwLjE5Miw0Ni4yMDQtNzkuOCw3OS44QzkuODAzLDE0OC4xNjgsMCwxODQuODU0LDAsMjI0LjYzICAgYzAsNDcuNzgsMTMuOTQsOTAuNzQ1LDQxLjgyNywxMjguOTA2YzI3Ljg4NCwzOC4xNjQsNjMuOTA2LDY0LjU3MiwxMDguMDYzLDc5LjIyN2M1LjE0LDAuOTU0LDguOTQ1LDAuMjgzLDExLjQxOS0xLjk5NiAgIGMyLjQ3NS0yLjI4MiwzLjcxMS01LjE0LDMuNzExLTguNTYyYzAtMC41NzEtMC4wNDktNS43MDgtMC4xNDQtMTUuNDE3Yy0wLjA5OC05LjcwOS0wLjE0NC0xOC4xNzktMC4xNDQtMjUuNDA2bC02LjU2NywxLjEzNiAgIGMtNC4xODcsMC43NjctOS40NjksMS4wOTItMTUuODQ2LDFjLTYuMzc0LTAuMDg5LTEyLjk5MS0wLjc1Ny0xOS44NDItMS45OTljLTYuODU0LTEuMjMxLTEzLjIyOS00LjA4Ni0xOS4xMy04LjU1OSAgIGMtNS44OTgtNC40NzMtMTAuMDg1LTEwLjMyOC0xMi41Ni0xNy41NTZsLTIuODU1LTYuNTdjLTEuOTAzLTQuMzc0LTQuODk5LTkuMjMzLTguOTkyLTE0LjU1OSAgIGMtNC4wOTMtNS4zMzEtOC4yMzItOC45NDUtMTIuNDE5LTEwLjg0OGwtMS45OTktMS40MzFjLTEuMzMyLTAuOTUxLTIuNTY4LTIuMDk4LTMuNzExLTMuNDI5Yy0xLjE0Mi0xLjMzMS0xLjk5Ny0yLjY2My0yLjU2OC0zLjk5NyAgIGMtMC41NzItMS4zMzUtMC4wOTgtMi40MywxLjQyNy0zLjI4OWMxLjUyNS0wLjg1OSw0LjI4MS0xLjI3Niw4LjI4LTEuMjc2bDUuNzA4LDAuODUzYzMuODA3LDAuNzYzLDguNTE2LDMuMDQyLDE0LjEzMyw2Ljg1MSAgIGM1LjYxNCwzLjgwNiwxMC4yMjksOC43NTQsMTMuODQ2LDE0Ljg0MmM0LjM4LDcuODA2LDkuNjU3LDEzLjc1NCwxNS44NDYsMTcuODQ3YzYuMTg0LDQuMDkzLDEyLjQxOSw2LjEzNiwxOC42OTksNi4xMzYgICBjNi4yOCwwLDExLjcwNC0wLjQ3NiwxNi4yNzQtMS40MjNjNC41NjUtMC45NTIsOC44NDgtMi4zODMsMTIuODQ3LTQuMjg1YzEuNzEzLTEyLjc1OCw2LjM3Ny0yMi41NTksMTMuOTg4LTI5LjQxICAgYy0xMC44NDgtMS4xNC0yMC42MDEtMi44NTctMjkuMjY0LTUuMTRjLTguNjU4LTIuMjg2LTE3LjYwNS01Ljk5Ni0yNi44MzUtMTEuMTRjLTkuMjM1LTUuMTM3LTE2Ljg5Ni0xMS41MTYtMjIuOTg1LTE5LjEyNiAgIGMtNi4wOS03LjYxNC0xMS4wODgtMTcuNjEtMTQuOTg3LTI5Ljk3OWMtMy45MDEtMTIuMzc0LTUuODUyLTI2LjY0OC01Ljg1Mi00Mi44MjZjMC0yMy4wMzUsNy41Mi00Mi42MzcsMjIuNTU3LTU4LjgxNyAgIGMtNy4wNDQtMTcuMzE4LTYuMzc5LTM2LjczMiwxLjk5Ny01OC4yNGM1LjUyLTEuNzE1LDEzLjcwNi0wLjQyOCwyNC41NTQsMy44NTNjMTAuODUsNC4yODMsMTguNzk0LDcuOTUyLDIzLjg0LDEwLjk5NCAgIGM1LjA0NiwzLjA0MSw5LjA4OSw1LjYxOCwxMi4xMzUsNy43MDhjMTcuNzA1LTQuOTQ3LDM1Ljk3Ni03LjQyMSw1NC44MTgtNy40MjFzMzcuMTE3LDIuNDc0LDU0LjgyMyw3LjQyMWwxMC44NDktNi44NDkgICBjNy40MTktNC41NywxNi4xOC04Ljc1OCwyNi4yNjItMTIuNTY1YzEwLjA4OC0zLjgwNSwxNy44MDItNC44NTMsMjMuMTM0LTMuMTM4YzguNTYyLDIxLjUwOSw5LjMyNSw0MC45MjIsMi4yNzksNTguMjQgICBjMTUuMDM2LDE2LjE4LDIyLjU1OSwzNS43ODcsMjIuNTU5LDU4LjgxN2MwLDE2LjE3OC0xLjk1OCwzMC40OTctNS44NTMsNDIuOTY2Yy0zLjksMTIuNDcxLTguOTQxLDIyLjQ1Ny0xNS4xMjUsMjkuOTc5ICAgYy02LjE5MSw3LjUyMS0xMy45MDEsMTMuODUtMjMuMTMxLDE4Ljk4NmMtOS4yMzIsNS4xNC0xOC4xODIsOC44NS0yNi44NCwxMS4xMzZjLTguNjYyLDIuMjg2LTE4LjQxNSw0LjAwNC0yOS4yNjMsNS4xNDYgICBjOS44OTQsOC41NjIsMTQuODQyLDIyLjA3NywxNC44NDIsNDAuNTM5djYwLjIzN2MwLDMuNDIyLDEuMTksNi4yNzksMy41NzIsOC41NjJjMi4zNzksMi4yNzksNi4xMzYsMi45NSwxMS4yNzYsMS45OTUgICBjNDQuMTYzLTE0LjY1Myw4MC4xODUtNDEuMDYyLDEwOC4wNjgtNzkuMjI2YzI3Ljg4LTM4LjE2MSw0MS44MjUtODEuMTI2LDQxLjgyNS0xMjguOTA2ICAgQzQzOC41MzYsMTg0Ljg1MSw0MjguNzI4LDE0OC4xNjgsNDA5LjEzMiwxMTQuNTczeiIgZmlsbD0iI2ZmZmZmZiIvPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+Cjwvc3ZnPgo=" />
-  </a>
-</div>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endfor %}
 
-<div id="shot" data-html2canvas-ignore>
-  <img alt="Close" class="close" onclick="closeShot()"
-       src="data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjZmZmZmZmIiBoZWlnaHQ9IjI0IiB2aWV3Qm94PSIwIDAgMjQgMjQiIHdpZHRoPSIyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICAgIDxwYXRoIGQ9Ik0xOSA2LjQxTDE3LjU5IDUgMTIgMTAuNTkgNi40MSA1IDUgNi40MSAxMC41OSAxMiA1IDE3LjU5IDYuNDEgMTkgMTIgMTMuNDEgMTcuNTkgMTkgMTkgMTcuNTkgMTMuNDEgMTJ6Ii8+CiAgICA8cGF0aCBkPSJNMCAwaDI0djI0SDB6IiBmaWxsPSJub25lIi8+Cjwvc3ZnPgo=" />
-  <div id="canvas-container"></div>
-</div>
+  <div id="github-link" data-html2canvas-ignore>
+    <a href="https://github.com/Shell32-Natsu/bangumi_yearly_report" target="_blank" title="GitHub">
+      <img src="data:image/svg+xml;utf8;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iaXNvLTg4NTktMSI/Pgo8IS0tIEdlbmVyYXRvcjogQWRvYmUgSWxsdXN0cmF0b3IgMTYuMC4wLCBTVkcgRXhwb3J0IFBsdWctSW4gLiBTVkcgVmVyc2lvbjogNi4wMCBCdWlsZCAwKSAgLS0+CjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+CjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgdmVyc2lvbj0iMS4xIiBpZD0iQ2FwYV8xIiB4PSIwcHgiIHk9IjBweCIgd2lkdGg9IjE2cHgiIGhlaWdodD0iMTZweCIgdmlld0JveD0iMCAwIDQzOC41NDkgNDM4LjU0OSIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAwIDAgNDM4LjU0OSA0MzguNTQ5OyIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+CjxnPgoJPHBhdGggZD0iTTQwOS4xMzIsMTE0LjU3M2MtMTkuNjA4LTMzLjU5Ni00Ni4yMDUtNjAuMTk0LTc5Ljc5OC03OS44QzI5NS43MzYsMTUuMTY2LDI1OS4wNTcsNS4zNjUsMjE5LjI3MSw1LjM2NSAgIGMtMzkuNzgxLDAtNzYuNDcyLDkuODA0LTExMC4wNjMsMjkuNDA4Yy0zMy41OTYsMTkuNjA1LTYwLjE5Miw0Ni4yMDQtNzkuOCw3OS44QzkuODAzLDE0OC4xNjgsMCwxODQuODU0LDAsMjI0LjYzICAgYzAsNDcuNzgsMTMuOTQsOTAuNzQ1LDQxLjgyNywxMjguOTA2YzI3Ljg4NCwzOC4xNjQsNjMuOTA2LDY0LjU3MiwxMDguMDYzLDc5LjIyN2M1LjE0LDAuOTU0LDguOTQ1LDAuMjgzLDExLjQxOS0xLjk5NiAgIGMyLjQ3NS0yLjI4MiwzLjcxMS01LjE0LDMuNzExLTguNTYyYzAtMC41NzEtMC4wNDktNS43MDgtMC4xNDQtMTUuNDE3Yy0wLjA5OC05LjcwOS0wLjE0NC0xOC4xNzktMC4xNDQtMjUuNDA2bC02LjU2NywxLjEzNiAgIGMtNC4xODcsMC43NjctOS40NjksMS4wOTItMTUuODQ2LDFjLTYuMzc0LTAuMDg5LTEyLjk5MS0wLjc1Ny0xOS44NDItMS45OTljLTYuODU0LTEuMjMxLTEzLjIyOS00LjA4Ni0xOS4xMy04LjU1OSAgIGMtNS44OTgtNC40NzMtMTAuMDg1LTEwLjMyOC0xMi41Ni0xNy41NTZsLTIuODU1LTYuNTdjLTEuOTAzLTQuMzc0LTQuODk5LTkuMjMzLTguOTkyLTE0LjU1OSAgIGMtNC4wOTMtNS4zMzEtOC4yMzItOC45NDUtMTIuNDE5LTEwLjg0OGwtMS45OTktMS40MzFjLTEuMzMyLTAuOTUxLTIuNTY4LTIuMDk4LTMuNzExLTMuNDI5Yy0xLjE0Mi0xLjMzMS0xLjk5Ny0yLjY2My0yLjU2OC0zLjk5NyAgIGMtMC41NzItMS4zMzUtMC4wOTgtMi40MywxLjQyNy0zLjI4OWMxLjUyNS0wLjg1OSw0LjI4MS0xLjI3Niw4LjI4LTEuMjc2bDUuNzA4LDAuODUzYzMuODA3LDAuNzYzLDguNTE2LDMuMDQyLDE0LjEzMyw2Ljg1MSAgIGM1LjYxNCwzLjgwNiwxMC4yMjksOC43NTQsMTMuODQ2LDE0Ljg0MmM0LjM4LDcuODA2LDkuNjU3LDEzLjc1NCwxNS44NDYsMTcuODQ3YzYuMTg0LDQuMDkzLDEyLjQxOSw2LjEzNiwxOC42OTksNi4xMzYgICBjNi4yOCwwLDExLjcwNC0wLjQ3NiwxNi4yNzQtMS40MjNjNC41NjUtMC45NTIsOC44NDgtMi4zODMsMTIuODQ3LTQuMjg1YzEuNzEzLTEyLjc1OCw2LjM3Ny0yMi41NTksMTMuOTg4LTI5LjQxICAgYy0xMC44NDgtMS4xNC0yMC42MDEtMi44NTctMjkuMjY0LTUuMTRjLTguNjU4LTIuMjg2LTE3LjYwNS01Ljk5Ni0yNi44MzUtMTEuMTRjLTkuMjM1LTUuMTM3LTE2Ljg5Ni0xMS41MTYtMjIuOTg1LTE5LjEyNiAgIGMtNi4wOS03LjYxNC0xMS4wODgtMTcuNjEtMTQuOTg3LTI5Ljk3OWMtMy45MDEtMTIuMzc0LTUuODUyLTI2LjY0OC01Ljg1Mi00Mi44MjZjMC0yMy4wMzUsNy41Mi00Mi42MzcsMjIuNTU3LTU4LjgxNyAgIGMtNy4wNDQtMTcuMzE4LTYuMzc5LTM2LjczMiwxLjk5Ny01OC4yNGM1LjUyLTEuNzE1LDEzLjcwNi0wLjQyOCwyNC41NTQsMy44NTNjMTAuODUsNC4yODMsMTguNzk0LDcuOTUyLDIzLjg0LDEwLjk5NCAgIGM1LjA0NiwzLjA0MSw5LjA4OSw1LjYxOCwxMi4xMzUsNy43MDhjMTcuNzA1LTQuOTQ3LDM1Ljk3Ni03LjQyMSw1NC44MTgtNy40MjFzMzcuMTE3LDIuNDc0LDU0LjgyMyw3LjQyMWwxMC44NDktNi44NDkgICBjNy40MTktNC41NywxNi4xOC04Ljc1OCwyNi4yNjItMTIuNTY1YzEwLjA4OC0zLjgwNSwxNy44MDItNC44NTMsMjMuMTM0LTMuMTM4YzguNTYyLDIxLjUwOSw5LjMyNSw0MC45MjIsMi4yNzksNTguMjQgICBjMTUuMDM2LDE2LjE4LDIyLjU1OSwzNS43ODcsMjIuNTU5LDU4LjgxN2MwLDE2LjE3OC0xLjk1OCwzMC40OTctNS44NTMsNDIuOTY2Yy0zLjksMTIuNDcxLTguOTQxLDIyLjQ1Ny0xNS4xMjUsMjkuOTc5ICAgYy02LjE5MSw3LjUyMS0xMy45MDEsMTMuODUtMjMuMTMxLDE4Ljk4NmMtOS4yMzIsNS4xNC0xOC4xODIsOC44NS0yNi44NCwxMS4xMzZjLTguNjYyLDIuMjg2LTE4LjQxNSw0LjAwNC0yOS4yNjMsNS4xNDYgICBjOS44OTQsOC41NjIsMTQuODQyLDIyLjA3NywxNC44NDIsNDAuNTM5djYwLjIzN2MwLDMuNDIyLDEuMTksNi4yNzksMy41NzIsOC41NjJjMi4zNzksMi4yNzksNi4xMzYsMi45NSwxMS4yNzYsMS45OTUgICBjNDQuMTYzLTE0LjY1Myw4MC4xODUtNDEuMDYyLDEwOC4wNjgtNzkuMjI2YzI3Ljg4LTM4LjE2MSw0MS44MjUtODEuMTI2LDQxLjgyNS0xMjguOTA2ICAgQzQzOC41MzYsMTg0Ljg1MSw0MjguNzI4LDE0OC4xNjgsNDA5LjEzMiwxMTQuNTczeiIgZmlsbD0iI2ZmZmZmZiIvPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+Cjwvc3ZnPgo=" alt="GitHub" />
+    </a>
+  </div>
 
-<style type="text/css">
-  #shot {
-    display: none;
-    background: rgba(0, 0, 0, 0.5);
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 99999998;
-    width: 100%;
-    height: 100%;
-  }
-  #shot img.close {
-    position: absolute;
-    right: 20px;
-    top: 20px;
-    cursor: pointer;
-  }
-  #canvas-container {overflow-y: scroll; max-height: 100%;}
-  #shot canvas {
-    top: 0;
-    left: 0;
-    opacity: 0;
-    transform: scale(0);
-    z-index: 99999999;
-    transition: transform 0.3s cubic-bezier(0.42, 0, 0.58, 1),opacity 0.3s cubic-bezier(0.42, 0, 0.58, 1),-webkit-transform 0.3s cubic-bezier(0.42, 0, 0.58, 1);
-  }
-</style>
+  <div id="shot" data-html2canvas-ignore>
+    <img alt="Close" class="close" onclick="closeShot()"
+         src="data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjZmZmZmZmIiBoZWlnaHQ9IjI0IiB2aWV3Qm94PSIwIDAgMjQgMjQiIHdpZHRoPSIyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICAgIDxwYXRoIGQ9Ik0xOSA2LjQxTDE3LjU5IDUgMTIgMTAuNTkgNi40MSA1IDUgNi40MSAxMC41OSAxMiA1IDE3LjU5IDYuNDEgMTkgMTIgMTMuNDEgMTcuNTkgMTkgMTkgMTcuNTkgMTMuNDEgMTJ6Ii8+CiAgICA8cGF0aCBkPSJNMCAwaDI0djI0SDB6IiBmaWxsPSJub25lIi8+Cjwvc3ZnPgo=" />
+    <div id="canvas-container"></div>
+  </div>
 
-<script type="text/javascript">
-  function toggle() {
-    var confEl = document.getElementById('config-overview');
-    if (!confEl) {return;}
-    if (confEl.classList.contains('enabled')) {
-      document.body.classList.remove('overview');
-      confEl.classList.remove('enabled');
-      confEl.classList.add('disabled');
-    } else {
-      document.body.classList.add('overview');
-      confEl.classList.add('enabled');
-      confEl.classList.remove('disabled');
+  <script type="text/javascript">
+    function toggle() {
+      var confEl = document.getElementById('config-overview');
+      if (!confEl) { return; }
+      if (confEl.classList.contains('enabled')) {
+        document.body.classList.remove('overview');
+        confEl.classList.remove('enabled');
+        confEl.classList.add('disabled');
+      } else {
+        document.body.classList.add('overview');
+        confEl.classList.add('enabled');
+        confEl.classList.remove('disabled');
+      }
     }
-  }
-</script>
 
-<script type="text/javascript">
-  function shot() {
-    if (document.getElementById('html2canvas')) {
-      startShot();
-    } else {
-      var script = document.createElement('script');
-      script.id = 'html2canvas';
-      script.src = "https://html2canvas.hertzen.com/dist/html2canvas.min.js";
-      script.onload = startShot;
-      document.body.appendChild(script);
+    function shot() {
+      if (document.getElementById('html2canvas')) {
+        startShot();
+      } else {
+        var script = document.createElement('script');
+        script.id = 'html2canvas';
+        script.src = "https://html2canvas.hertzen.com/dist/html2canvas.min.js";
+        script.onload = startShot;
+        document.body.appendChild(script);
+      }
     }
-  }
-  function startShot() {
-    html2canvas(document.body, {
-      'allowTaint': true, 'logging': false, 'backgroundColor': '#1c1c1c'
-    }).then(function(canvas) {
-      document.body.style.overflowY = 'hidden';
-      document.getElementById('shot').style.display = 'block';
-      document.getElementById('canvas-container').appendChild(canvas);
-      setTimeout(function() {
-        canvas.id = 'shot-canvas';
-        canvas.style.opacity = '1';
+
+    function startShot() {
+      html2canvas(document.body, {
+        'allowTaint': true, 
+        'logging': false,
+        'backgroundColor': '#0f0f0f'
+      }).then(function(canvas) {
+        document.body.style.overflowY = 'hidden';
+        document.getElementById('shot').style.display = 'block';
+        document.getElementById('canvas-container').appendChild(canvas);
+        setTimeout(function() {
+          canvas.id = 'shot-canvas';
+          canvas.style.opacity = '1';
+          canvas.style.transform = 'scale(0.8)';
+        }, 100);
+      });
+    }
+
+    function closeShot() {
+      document.body.style.overflowY = '';
+      var canvas = document.getElementById('shot-canvas');
+      if (canvas) {
+        canvas.style.opacity = '0';
         canvas.style.transform = 'scale(0.8)';
-      }, 100)
-    });
-  }
-  function closeShot() {
-    document.body.style.overflowY = '';
-    var canvas = document.getElementById('shot-canvas');
-    canvas.style.opacity = '0';
-    canvas.style.transform = 'scale(0)';
-    setTimeout(function() {
-      canvas.remove();
-      document.getElementById('shot').style.display = 'none';
-    }, 300)
-  }
+        setTimeout(function() {
+          canvas.remove();
+          document.getElementById('shot').style.display = 'none';
+        }, 300);
+      }
+    }
 
-  function hide() {
+    function hide() {
       console.log("hide 18x");
       const ulElements = document.querySelectorAll('.main ul');
 
@@ -285,13 +650,26 @@
         const listItemElements = ul.querySelectorAll('li');
         listItemElements.forEach((li) => {
           const imgElement = li.querySelector('.item-box .item-image img');
-          console.log(li)
           if (imgElement && imgElement.getAttribute('src') === 'https://bgm.tv/img/no_icon_subject.png') {
             li.style.display = 'none';
           }
         });
       });
     }
-</script>
+
+    // Add smooth loading animation
+    document.addEventListener('DOMContentLoaded', function() {
+      const items = document.querySelectorAll('.item-box');
+      items.forEach((item, index) => {
+        item.style.opacity = '0';
+        item.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+          item.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+          item.style.opacity = '1';
+          item.style.transform = 'translateY(0)';
+        }, index * 50);
+      });
+    });
+  </script>
 </body>
 </html>
