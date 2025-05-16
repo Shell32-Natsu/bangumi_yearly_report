@@ -185,6 +185,11 @@
       transform: translateY(0);
     }
 
+    body.show-titles .item-title {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
     .item-title a {
       color: white;
       text-decoration: none;
@@ -524,6 +529,7 @@
     </div>
     <div class="config-content">
       <a id="config-overview" class="config-btn disabled" onclick="toggle()">概览模式</a>
+      <a id="config-title" class="config-btn disabled" onclick="toggleTitle()">显示标题</a>
       <a id="action-shot" class="config-btn" onclick="shot()">截图</a>
       <a id="action-hide" class="config-btn" onclick="hide()">隐藏</a>
     </div>
@@ -595,6 +601,20 @@
         confEl.classList.add('disabled');
       } else {
         document.body.classList.add('overview');
+        confEl.classList.add('enabled');
+        confEl.classList.remove('disabled');
+      }
+    }
+
+    function toggleTitle() {
+      var confEl = document.getElementById('config-title');
+      if (!confEl) { return; }
+      if (confEl.classList.contains('enabled')) {
+        document.body.classList.remove('show-titles');
+        confEl.classList.remove('enabled');
+        confEl.classList.add('disabled');
+      } else {
+        document.body.classList.add('show-titles');
         confEl.classList.add('enabled');
         confEl.classList.remove('disabled');
       }
