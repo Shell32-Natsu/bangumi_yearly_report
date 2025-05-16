@@ -117,9 +117,9 @@ start_server() {
     
     # Start the server in background and capture PID
     if [[ -x "./bangumi-server" ]]; then
-        ./bangumi-server >> "${LOG_FILE}" 2>&1 &
+        ./bangumi-server 2>&1 &
     else
-        go run main.go >> "${LOG_FILE}" 2>&1 &
+        go run main.go 2>&1 &
     fi
     
     local server_pid=$!
@@ -153,7 +153,6 @@ main() {
     
     log_info "Starting bangumi server runner"
     log_info "Script location: ${SCRIPT_DIR}"
-    log_info "Log file: ${LOG_FILE}"
     log_info "Auto-restart: ${ENABLE_AUTO_RESTART}"
     log_info "Max restarts: ${MAX_RESTARTS}"
     log_info "Restart delay: ${RESTART_DELAY}s"
