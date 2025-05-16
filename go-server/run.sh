@@ -7,8 +7,6 @@ set -euo pipefail
 
 # Configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-LOG_DIR="${SCRIPT_DIR}/logs"
-LOG_FILE="${LOG_DIR}/server.log"
 PID_FILE="${SCRIPT_DIR}/server.pid"
 MAX_RESTARTS=${MAX_RESTARTS:-10}
 RESTART_DELAY=${RESTART_DELAY:-5}
@@ -27,7 +25,7 @@ log() {
     shift
     local message="$*"
     local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
-    echo -e "${timestamp} [${level}] ${message}" | tee -a "${LOG_FILE}"
+    echo -e "${timestamp} [${level}] ${message}"
 }
 
 log_info() {
@@ -119,9 +117,9 @@ start_server() {
     
     # Start the server in background and capture PID
     if [[ -x "./bangumi-server" ]]; then
-        ./bangumi-server >> "${LOG_FILE}" 2>&1 &
+        ./bangumi-server 2>&1 &
     else
-        go run main.go >> "${LOG_FILE}" 2>&1 &
+        go run main.go 2>&1 &
     fi
     
     local server_pid=$!
@@ -155,7 +153,6 @@ main() {
     
     log_info "Starting bangumi server runner"
     log_info "Script location: ${SCRIPT_DIR}"
-    log_info "Log file: ${LOG_FILE}"
     log_info "Auto-restart: ${ENABLE_AUTO_RESTART}"
     log_info "Max restarts: ${MAX_RESTARTS}"
     log_info "Restart delay: ${RESTART_DELAY}s"
