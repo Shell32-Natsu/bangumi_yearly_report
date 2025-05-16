@@ -186,7 +186,7 @@ while true; do
         go run main.go &
     fi
     
-    local server_pid=$!
+    server_pid=$!
     echo "${server_pid}" > "${PID_FILE}"
     
     # Wait a moment to check if the server started successfully
