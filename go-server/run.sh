@@ -7,8 +7,6 @@ set -euo pipefail
 
 # Configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-LOG_DIR="${SCRIPT_DIR}/logs"
-LOG_FILE="${LOG_DIR}/server.log"
 PID_FILE="${SCRIPT_DIR}/server.pid"
 MAX_RESTARTS=${MAX_RESTARTS:-10}
 RESTART_DELAY=${RESTART_DELAY:-5}
@@ -27,7 +25,7 @@ log() {
     shift
     local message="$*"
     local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
-    echo -e "${timestamp} [${level}] ${message}" | tee -a "${LOG_FILE}"
+    echo -e "${timestamp} [${level}] ${message}"
 }
 
 log_info() {
