@@ -37,10 +37,3 @@ jobs:
     - name: Run Generator
       run: python3 $GITHUB_WORKSPACE/bangumi_report.py -u xiadong1994 -y all
     
-    - name: Upload a Build Artifact
-      uses: actions/upload-artifact@v2
-      with:
-        # Artifact name
-        name: test_report.html
-        # A file, directory or wildcard pattern that describes what to upload
-        path: xiadong1994-all-anime-report.html
