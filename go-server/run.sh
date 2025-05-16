@@ -10,7 +10,6 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PID_FILE="${SCRIPT_DIR}/server.pid"
 MAX_RESTARTS=${MAX_RESTARTS:-10}
 RESTART_DELAY=${RESTART_DELAY:-5}
-ENABLE_AUTO_RESTART=${ENABLE_AUTO_RESTART:-true}
 
 # Colors for output
 RED='\033[0;31m'
@@ -72,6 +71,24 @@ init() {
 # Cleanup function
 cleanup() {
     log_info "Cleaning up..."
+    
+    # Clean up monitor process
+    local monitor_pid_file="${SCRIPT_DIR}/monitor.pid"
+    if [[ -f "${monitor_pid_file}" ]]; then
+        local monitor_pid=$(cat "${monitor_pid_file}")
+        if kill -0 "${monitor_pid}" 2>/dev/null; then
+            log_info "Terminating monitor process (PID: ${monitor_pid})"
+            kill -TERM "${monitor_pid}" 2>/dev/null || true
+            sleep 2
+            if kill -0 "${monitor_pid}" 2>/dev/null; then
+                log_warn "Monitor didn't terminate gracefully, forcing kill"
+                kill -KILL "${monitor_pid}" 2>/dev/null || true
+            fi
+        fi
+        rm -f "${monitor_pid_file}"
+    fi
+    
+    # Clean up server process
     if [[ -f "${PID_FILE}" ]]; then
         local pid=$(cat "${PID_FILE}")
         if kill -0 "${pid}" 2>/dev/null; then
@@ -79,11 +96,17 @@ cleanup() {
             kill -TERM "${pid}" 2>/dev/null || true
             sleep 2
             if kill -0 "${pid}" 2>/dev/null; then
-                log_warn "Process didn't terminate gracefully, forcing kill"
+                log_warn "Server didn't terminate gracefully, forcing kill"
                 kill -KILL "${pid}" 2>/dev/null || true
             fi
         fi
         rm -f "${PID_FILE}"
+    fi
+    
+    # Clean up temporary monitor script
+    local monitor_script="${SCRIPT_DIR}/monitor.sh"
+    if [[ -f "${monitor_script}" ]]; then
+        rm -f "${monitor_script}"
     fi
 }
 
@@ -107,16 +130,60 @@ build_server() {
     fi
 }
 
-# Start the server
+# Start the server with auto-restart monitoring
 start_server() {
     cd "${SCRIPT_DIR}"
-    log_info "Starting bangumi server..."
+    log_info "Starting bangumi server with auto-restart monitoring..."
     
-    # Start the server in background and capture PID
+    # Create a monitoring script that will restart the server if it exits
+    local monitor_script="${SCRIPT_DIR}/monitor.sh"
+    cat > "${monitor_script}" << 'EOF'
+#!/bin/bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PID_FILE="${SCRIPT_DIR}/server.pid"
+MONITOR_PID_FILE="${SCRIPT_DIR}/monitor.pid"
+MAX_RESTARTS=${MAX_RESTARTS:-10}
+RESTART_DELAY=${RESTART_DELAY:-5}
+
+# Store monitor PID
+echo $$ > "${MONITOR_PID_FILE}"
+
+log() {
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    echo "${timestamp} [MONITOR] $*"
+}
+
+cleanup_monitor() {
+    log "Monitor shutting down..."
+    if [[ -f "${PID_FILE}" ]]; then
+        local pid=$(cat "${PID_FILE}")
+        if kill -0 "${pid}" 2>/dev/null; then
+            log "Terminating server process (PID: ${pid})"
+            kill -TERM "${pid}" 2>/dev/null || true
+            sleep 2
+            if kill -0 "${pid}" 2>/dev/null; then
+                log "Process didn't terminate gracefully, forcing kill"
+                kill -KILL "${pid}" 2>/dev/null || true
+            fi
+        fi
+        rm -f "${PID_FILE}"
+    fi
+    rm -f "${MONITOR_PID_FILE}"
+    exit 0
+}
+
+trap cleanup_monitor SIGTERM SIGINT SIGQUIT
+
+restart_count=0
+while true; do
+    # Start the server
+    cd "${SCRIPT_DIR}"
     if [[ -x "./bangumi-server" ]]; then
-        ./bangumi-server 2>&1 &
+        ./bangumi-server &
     else
-        go run main.go 2>&1 &
+        go run main.go &
     fi
     
     local server_pid=$!
@@ -125,37 +192,53 @@ start_server() {
     # Wait a moment to check if the server started successfully
     sleep 2
     if kill -0 "${server_pid}" 2>/dev/null; then
-        log_info "Server started successfully (PID: ${server_pid})"
+        log "Server started successfully (PID: ${server_pid})"
+        restart_count=0
+        wait "${server_pid}" 2>/dev/null || true
+        log "Server process exited"
+        rm -f "${PID_FILE}"
+    else
+        log "Server failed to start"
+        rm -f "${PID_FILE}"
+    fi
+    
+    # Check restart limit
+    ((restart_count++))
+    if [[ ${restart_count} -ge ${MAX_RESTARTS} ]]; then
+        log "Maximum restart attempts (${MAX_RESTARTS}) reached, giving up"
+        cleanup_monitor
+    fi
+    
+    log "Restart attempt ${restart_count}/${MAX_RESTARTS} in ${RESTART_DELAY} seconds..."
+    sleep "${RESTART_DELAY}"
+done
+EOF
+    
+    chmod +x "${monitor_script}"
+    
+    # Start the monitor in the background
+    nohup "${monitor_script}" > "${SCRIPT_DIR}/monitor.log" 2>&1 &
+    local monitor_pid=$!
+    
+    # Wait a moment to ensure monitor started successfully
+    sleep 1
+    if kill -0 "${monitor_pid}" 2>/dev/null; then
+        log_info "Server monitoring started successfully (Monitor PID: ${monitor_pid})"
+        log_info "Monitor logs: ${SCRIPT_DIR}/monitor.log"
         return 0
     else
-        log_error "Server failed to start"
-        rm -f "${PID_FILE}"
+        log_error "Failed to start monitoring"
         return 1
     fi
 }
 
-# Wait for server to exit
-wait_for_server() {
-    if [[ -f "${PID_FILE}" ]]; then
-        local pid=$(cat "${PID_FILE}")
-        log_info "Waiting for server process (PID: ${pid}) to exit..."
-        wait "${pid}" 2>/dev/null || true
-        rm -f "${PID_FILE}"
-    fi
-}
 
 # Main execution function
 main() {
-    local restart_count=0
-    
     log_info "Starting bangumi server runner"
     log_info "Script location: ${SCRIPT_DIR}"
-    log_info "Auto-restart: ${ENABLE_AUTO_RESTART}"
     log_info "Max restarts: ${MAX_RESTARTS}"
     log_info "Restart delay: ${RESTART_DELAY}s"
-    
-    # Set up signal handlers
-    trap handle_signal SIGTERM SIGINT SIGQUIT
     
     # Initialize environment
     init
@@ -163,34 +246,15 @@ main() {
     # Try to build the server first (optional optimization)
     build_server || log_warn "Pre-build failed, will use 'go run' instead"
     
-    while true; do
-        # Start the server
-        if start_server; then
-            restart_count=0
-            wait_for_server
-            log_warn "Server process exited"
-        else
-            log_error "Failed to start server"
-        fi
-        
-        # Check if auto-restart is disabled
-        if [[ "${ENABLE_AUTO_RESTART}" != "true" ]]; then
-            log_info "Auto-restart is disabled, exiting"
-            break
-        fi
-        
-        # Check restart limit
-        ((restart_count++))
-        if [[ ${restart_count} -ge ${MAX_RESTARTS} ]]; then
-            log_error "Maximum restart attempts (${MAX_RESTARTS}) reached, giving up"
-            exit 1
-        fi
-        
-        log_info "Restart attempt ${restart_count}/${MAX_RESTARTS} in ${RESTART_DELAY} seconds..."
-        sleep "${RESTART_DELAY}"
-    done
-    
-    log_info "Server runner stopped"
+    # Start the server with monitoring
+    if start_server; then
+        log_info "Server started with monitoring. Script will now exit."
+        log_info "Use '$0 --stop' to stop the server and monitoring."
+        exit 0
+    else
+        log_error "Failed to start server"
+        exit 1
+    fi
 }
 
 # Parse command line arguments
@@ -203,7 +267,6 @@ Usage: $0 [OPTIONS]
 
 Options:
     --help, -h              Show this help message
-    --no-restart            Disable automatic restart on failure
     --max-restarts NUM      Maximum number of restart attempts (default: 10)
     --restart-delay SEC     Delay between restart attempts in seconds (default: 5)
     --debug                 Enable debug logging
@@ -213,21 +276,15 @@ Options:
 Environment Variables:
     MAX_RESTARTS            Maximum number of restart attempts
     RESTART_DELAY           Delay between restart attempts
-    ENABLE_AUTO_RESTART     Enable/disable auto-restart (true/false)
     DEBUG                   Enable debug logging (true/false)
 
 Examples:
-    $0                      Start server with default settings
-    $0 --no-restart         Start server without auto-restart
+    $0                      Start server with auto-restart monitoring
     $0 --max-restarts 5     Start with maximum 5 restart attempts
     $0 --debug              Start with debug logging enabled
     $0 --stop               Stop any running server
 EOF
                 exit 0
-                ;;
-            --no-restart)
-                ENABLE_AUTO_RESTART=false
-                shift
                 ;;
             --max-restarts)
                 MAX_RESTARTS="$2"
