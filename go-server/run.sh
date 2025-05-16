@@ -48,9 +48,6 @@ log_debug() {
 
 # Initialize environment
 init() {
-    # Create logs directory if it doesn't exist
-    mkdir -p "${LOG_DIR}"
-    
     # Check if Go is installed
     if ! command -v go &> /dev/null; then
         log_error "Go is not installed or not in PATH"
