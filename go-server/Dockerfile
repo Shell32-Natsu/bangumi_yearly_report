@@ -4,7 +4,7 @@ RUN apk add --no-cache git
 
 WORKDIR /build
 
-COPY go-server/go.mod .
+COPY go-server/go.mod go-server/go.sum ./
 COPY go-server/main.go .
 
 RUN go mod download
