@@ -19,11 +19,11 @@ WORKDIR /app
 
 COPY --from=builder /build/bangumi-server .
 
-COPY ../requirements.txt .
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY ../bangumi_report.py .
-COPY ../template.html .
+COPY bangumi_report.py .
+COPY template.html .
 
 RUN mkdir -p data
 
