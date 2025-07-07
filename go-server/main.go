@@ -22,7 +22,6 @@ func main() {
 
 		// Call python script
 		cmd := exec.Command("./bangumi_report.py", "-u", username, "-o", "-q", "-y", year)
-		cmd.Dir = ".."
 		out, err := cmd.CombinedOutput()
 		if err == nil {
 			fmt.Fprint(w, string(out))
@@ -35,5 +34,5 @@ func main() {
 	// Register handlers
 	http.HandleFunc("/report/", ReportHandler)
 
-	log.Fatal(http.ListenAndServe("127.0.0.1:8080", nil))
+	log.Fatal(http.ListenAndServe("0.0.0.0:8080", nil))
 }

@@ -27,7 +27,7 @@ COPY template.html .
 
 RUN mkdir -p data
 
-COPY docker-entrypoint.sh .
+COPY go-server/docker-entrypoint.sh .
 RUN chmod +x docker-entrypoint.sh
 
 EXPOSE 8080
