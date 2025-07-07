@@ -4,9 +4,10 @@ RUN apk add --no-cache git
 
 WORKDIR /build
 
+COPY go-server/go.mod .
 COPY go-server/main.go .
 
-RUN go get github.com/bitly/go-simplejson github.com/boltdb/bolt
+RUN go mod download
 
 RUN go build -o bangumi-server main.go
 
