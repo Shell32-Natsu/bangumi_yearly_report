@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  bangumi-server:
+    build:
+      context: .
+      dockerfile: go-server/Dockerfile
+    container_name: bangumi-yearly-report
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./go-server/data:/app/data
+      - ./reports:/app/reports
+    environment:
+      - TZ=Asia/Shanghai
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

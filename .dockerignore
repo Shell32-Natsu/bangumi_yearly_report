@@ -1,0 +1,11 @@
+.git
+.gitignore
+*.md
+reports/
+go-server/data/
+go-server/bangumi-server
+go-server/run.sh
+docker/
+.DS_Store
+*.log
+*.tmp
