@@ -1,20 +1,12 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"html"
-	"io/ioutil"
 	"log"
 	"net/http"
-	"net/url"
-	"os"
-	"strings"
-	"time"
 	"os/exec"
-
-	"github.com/bitly/go-simplejson"
-	"github.com/boltdb/bolt"
+	"strings"
 )
 
 func main() {
@@ -36,7 +28,7 @@ func main() {
 			fmt.Fprint(w, string(out))
 		} else {
 			// fmt.Fprint(w, "Error occurs\n" + err.Error() + "\n" + string(out))
-			fmt.Fprint(w, "Error occurs\n" + err.Error())
+			fmt.Fprint(w, "Error occurs\n"+err.Error())
 		}
 	}
 
