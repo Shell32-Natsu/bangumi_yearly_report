@@ -4,7 +4,7 @@ RUN apk add --no-cache git
 
 WORKDIR /build
 
-COPY main.go .
+COPY go-server/main.go .
 
 RUN go get github.com/bitly/go-simplejson github.com/boltdb/bolt
 
