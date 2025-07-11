@@ -7,7 +7,7 @@ services:
       dockerfile: go-server/Dockerfile
     container_name: bangumi-yearly-report
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     volumes:
       - ./go-server/data:/app/data
       - ./reports:/app/reports
