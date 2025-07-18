@@ -8,6 +8,7 @@ services:
     container_name: bangumi-yearly-report
     ports:
       - "127.0.0.1:8080:8080"
+      - "127.0.0.1:9090:9090"
     volumes:
       - ./go-server/data:/app/data
       - ./reports:/app/reports
