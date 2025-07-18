@@ -7,7 +7,7 @@ WORKDIR /build
 COPY go-server/go.mod ./
 COPY go-server/main.go .
 
-RUN go mod download
+RUN go mod tidy
 
 RUN go build -o bangumi-server main.go
 
