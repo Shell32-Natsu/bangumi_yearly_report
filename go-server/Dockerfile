@@ -1,4 +1,4 @@
-FROM golang:1.21-alpine AS builder
+FROM golang:1.22-alpine AS builder
 
 RUN apk add --no-cache git
 
@@ -11,7 +11,7 @@ RUN go mod download
 
 RUN go build -o bangumi-server main.go
 
-FROM python:3.9-alpine
+FROM python:3.13-alpine
 
 RUN apk add --no-cache ca-certificates
 
