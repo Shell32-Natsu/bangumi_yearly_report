@@ -9,6 +9,7 @@ import datetime
 import json
 
 import requests
+from lxml import html
 
 
 class ImageURLList:
@@ -72,18 +73,49 @@ class ImageURLList:
                               page_url, response.status_code, response.text)
                 return
 
-            pattern = re.compile(
-                r'<img src="(.*?)" class="cover" />.*?<a href="(/subject/\d+?)" class="l">(.*?)</a>.*?(<span class="starstop-s"><span class="starlight stars(\d+?)"></span></span>)?<span class="tip_j">(\d{4}-\d{1,2}-\d{1,2})</span>', re.S)
-            # item image_url, link, title, [wtf], starinfo, marked_time
+            # use lxml to parse HTML instead of regex
             response.encoding = 'utf-8'
-            items = pattern.findall(response.text)
+            doc = html.fromstring(response.text)
+            items = []
+            
+            # image_url, link, title, starinfo, marked_time
+            for li in doc.xpath('//li[contains(@class,"item")]'):
+                img_src = li.xpath('.//img[@class="cover"]/@src')
+                if not img_src:
+                    continue
+                img_src = img_src[0]
+
+                link = li.xpath('.//h3/a[@class="l"]/@href')
+                if not link:
+                    continue
+                link = link[0]
+
+                title = li.xpath('.//h3/a[@class="l"]/text()')
+                if not title:
+                    continue
+                title = title[0].strip()
+
+                star_class = li.xpath('.//span[contains(@class,"starlight")]/@class')
+                star_num = ''
+                if star_class:
+                    m = re.search(r'stars(\d+)', star_class[0])
+                    if m:
+                        star_num = m.group(1)
+
+                date_text = li.xpath('.//span[@class="tip_j"]/text()')
+                if not date_text:
+                    continue
+                date_text = date_text[0]
+
+                items.append((img_src, link, title, star_num, date_text))
+
             logging.debug('%s items in %s', len(items), page_url)
 
             page_idx = int(page_url.split('?page=')[1]) - 1
             folder_path = '%s-%s-%s-report' % (self.user_id,
                                                self.year, self.type)
             for item in items:
-                if self.year != 'all' and item[5][0:4] != self.year:
+                if self.year != 'all' and item[4][0:4] != self.year:
                     continue
                 large_image_url = re.sub(r'cover/./', 'cover/l/', item[0])
                 # The image is not shown to guest. Use API to get it
@@ -93,10 +125,10 @@ class ImageURLList:
                 img_url = 'https:' + large_image_url
                 if self.saveimg:
                     img_url = self.save_img(img_url, folder_path)
-                marked_time = datetime.datetime.strptime(item[5], '%Y-%m-%d')
+                marked_time = datetime.datetime.strptime(item[4], '%Y-%m-%d')
                 star_num = -1
-                if item[4] != '':
-                    star_num = int(item[4])
+                if item[3] != '':
+                    star_num = int(item[3])
                 self.item_url_list_page[page_idx].append({
                     'image_url': img_url,
                     'marked_date': marked_time.strftime('%Y-%m-%d'),
