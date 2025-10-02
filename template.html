@@ -553,7 +553,7 @@
           <div class="item-image">
               <a href="{{ image['link'] }}" target="_blank">
                 <div class="image-wrapper">
-                  <img src="{{ image['image_url'] }}" alt="{{ image['title'] }}">
+                  <img src="{{ image['image_url'] }}" alt="{{ image['title'] }}" crossorigin="anonymous">
                 </div>
               </a>
           </div>
@@ -621,31 +621,58 @@
     }
 
     function shot() {
-      if (document.getElementById('html2canvas')) {
+      if (document.getElementById('htmlToImage')) {
         startShot();
       } else {
         var script = document.createElement('script');
-        script.id = 'html2canvas';
-        script.src = "https://html2canvas.hertzen.com/dist/html2canvas.min.js";
+        script.id = 'htmlToImage';
+        script.src = "https://unpkg.com/html-to-image";
         script.onload = startShot;
         document.body.appendChild(script);
       }
     }
 
     function startShot() {
-      html2canvas(document.body, {
-        'allowTaint': true, 
-        'logging': false,
-        'backgroundColor': null
-      }).then(function(canvas) {
+      window.scrollTo(0, 0);
+
+      const filter = (node) => {
+        if (node.dataset && node.dataset.html2canvasIgnore !== undefined) {
+          return false;
+        }
+        return true;
+      };
+
+      htmlToImage.toPng(document.body, {
+        backgroundColor: null,
+        width: document.documentElement.scrollWidth,
+        height: document.documentElement.scrollHeight,
+        style: {
+          transform: 'scale(1)',
+          transformOrigin: 'top left'
+        },
+        filter: filter,
+      }).then(function(dataUrl) {
         document.body.style.overflowY = 'hidden';
         document.getElementById('shot').style.display = 'block';
-        document.getElementById('canvas-container').appendChild(canvas);
+        
+        var img = new Image();
+        img.src = dataUrl;
+        img.style.opacity = '0';
+        img.style.transform = 'scale(1)';
+        img.style.transition = 'all 0.3s ease';
+        
+        var container = document.getElementById('canvas-container');
+        container.innerHTML = '';
+        container.appendChild(img);
+
         setTimeout(function() {
-          canvas.id = 'shot-canvas';
-          canvas.style.opacity = '1';
-          canvas.style.transform = 'scale(0.8)';
+          img.id = 'shot-canvas';
+          img.style.opacity = '1';
+          img.style.transform = 'scale(0.4)';
         }, 100);
+      })
+      .catch(function(error) {
+        console.error('截图失败:', error);
       });
     }
 
