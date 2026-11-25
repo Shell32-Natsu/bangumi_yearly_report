@@ -55,7 +55,6 @@ class ImageURLList:
 
     def get_missed_image(self, item_id):
         bgm_api_prefix = 'https://api.bgm.tv'
-        # v0 API is required: the legacy /subject/{id} endpoint now returns 404
         item_url = bgm_api_prefix + '/v0/subjects/' + item_id
         default_ret = '//bgm.tv/img/no_icon_subject.png'
 
@@ -67,7 +66,6 @@ class ImageURLList:
         res_json = json.loads(response.text)
         if 'images' not in res_json or 'large' not in res_json['images']:
             return default_ret
-        # v0 API already returns an absolute URL (e.g. https://lain.bgm.tv/...)
         return res_json['images']['large']
 
     def get_item_url(self, page_url, type):
@@ -127,7 +125,6 @@ class ImageURLList:
                 # The image is not shown to guest. Use API to get it
                 if large_image_url.startswith('/img/'):
                     item_id = item[1].split('/')[-1]
-                    # already an absolute URL
                     img_url = self.get_missed_image(item_id)
                 else:
                     img_url = 'https:' + large_image_url
