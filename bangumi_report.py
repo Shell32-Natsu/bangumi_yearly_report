@@ -13,7 +13,7 @@ from lxml import html
 
 
 class ImageURLList:
-    def __init__(self, user_id, max_connection, year, type, saveimg):
+    def __init__(self, user_id, max_connection, year, type, saveimg, token=None):
         self.user_id = user_id
         self.item_url_list = []
         self.pool_sema = BoundedSemaphore(value=max_connection)
@@ -23,6 +23,10 @@ class ImageURLList:
         self.session = requests.Session()
         self.session.headers = {
             'User-Agent': 'Mozilla/5.0 Chrome/77.0.3865.120'}
+        self.api_headers = {}
+        if token:
+            # Token is only sent to the API (not to bgm.tv pages or image CDN)
+            self.api_headers['Authorization'] = 'Bearer ' + token
 
         retries = requests.adapters.Retry(total=5,
                                           backoff_factor=0.1,
@@ -51,10 +55,11 @@ class ImageURLList:
 
     def get_missed_image(self, item_id):
         bgm_api_prefix = 'https://api.bgm.tv'
-        item_url = bgm_api_prefix + '/subject/' + item_id
+        # v0 API is required: the legacy /subject/{id} endpoint now returns 404
+        item_url = bgm_api_prefix + '/v0/subjects/' + item_id
         default_ret = '//bgm.tv/img/no_icon_subject.png'
 
-        response = self.session.get(item_url)
+        response = self.session.get(item_url, headers=self.api_headers)
         if response.status_code != 200:
             logging.error('\nURL: %s\nStatus code: %s\nContent: %s\n',
                           item_url, response.status_code, response.text)
@@ -62,7 +67,8 @@ class ImageURLList:
         res_json = json.loads(response.text)
         if 'images' not in res_json or 'large' not in res_json['images']:
             return default_ret
-        return res_json['images']['large'][5:]
+        # v0 API already returns an absolute URL (e.g. https://lain.bgm.tv/...)
+        return res_json['images']['large']
 
     def get_item_url(self, page_url, type):
         with self.pool_sema:
@@ -121,8 +127,10 @@ class ImageURLList:
                 # The image is not shown to guest. Use API to get it
                 if large_image_url.startswith('/img/'):
                     item_id = item[1].split('/')[-1]
-                    large_image_url = self.get_missed_image(item_id)
-                img_url = 'https:' + large_image_url
+                    # already an absolute URL
+                    img_url = self.get_missed_image(item_id)
+                else:
+                    img_url = 'https:' + large_image_url
                 if self.saveimg:
                     img_url = self.save_img(img_url, folder_path)
                 marked_time = datetime.datetime.strptime(item[4], '%Y-%m-%d')
@@ -306,6 +314,9 @@ def main():
     parser.add_argument('-s', '--saveimg', action='store_true', default=False)
     parser.add_argument('-o', '--stdout', action='store_true', default=False)
     parser.add_argument('-q', '--quiet', action='store_true', default=False)
+    parser.add_argument('-k', '--token', type=str, default=os.environ.get('BGM_TOKEN'),
+                        help='Bangumi access token, used to fetch images of NSFW items '
+                             '(defaults to env BGM_TOKEN)')
     parser.add_argument('-md', '--markdown',
                         action='store_true', default=False)
 
@@ -323,7 +334,7 @@ def main():
                  args.user_id, args.max_conn, args.year, args.type)
 
     image_url_list = ImageURLList(
-        args.user_id, args.max_conn, args.year, args.type, args.saveimg).get_list()
+        args.user_id, args.max_conn, args.year, args.type, args.saveimg, args.token).get_list()
     report_generator = ReportGenerator(
         image_url_list, args.user_id, args.year, args.type)
     report_generator.generate_report(args.stdout, args.markdown)
