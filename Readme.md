@@ -3,7 +3,7 @@
 # 用法
 
 ```
-usage: bangumi_report.py [-h] -u USER_ID [-m MAX_CONN] [-y YEAR] [-t TYPE] [-d] [--version] [-s] [-md]
+usage: bangumi_report.py [-h] -u USER_ID [-m MAX_CONN] [-y YEAR] [-t TYPE] [-d] [--version] [-s] [-k] [-md]
 
 -u/--user_id：指定要抓取的用户ID
 -m/--max_conn：最大下载线程数
@@ -12,6 +12,7 @@ usage: bangumi_report.py [-h] -u USER_ID [-m MAX_CONN] [-y YEAR] [-t TYPE] [-d] 
 -s/--saveimg: 下载图片至本地
 -q/--quiet：不产生任何日志
 -o/--stdout：生成的HTML将不会写入文件而是输出到stdout
+-k/--token：提供bangumi的Access Token用于访问限制条目
 -md/--markdown：生成Markdown文件，不包含图片
 ```
 
