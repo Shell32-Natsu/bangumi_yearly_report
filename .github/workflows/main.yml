@@ -20,13 +20,13 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Setup Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         # Version range or exact version of a Python version to use, using SemVer's version range syntax.
-        python-version: 3.13.0
+        python-version: "3.13"
         # The target architecture (x86, x64) of the Python interpreter.
         architecture: x64
 
